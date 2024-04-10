@@ -1,0 +1,102 @@
+    {
+      "travelDuration": 90,
+      "timePattern": "10|20|10|20",
+      "frequency": 2,
+      "numberOfTransfers": 2,
+      "segments": [
+        {
+          "segment_id": 1,
+          "duration": 25,
+          "trainType": "Intercity",
+          "trainId": "IC1234",
+          "seriesName": "A120",
+          "steps": [
+            {
+              "step_id": 1,
+              "stepType": "Departure",
+              "stationName": "Rotterdam Central",
+              "time": "10|30|40|00",
+              "track": "5"
+            },
+            {
+              "stepType": "Arrival",
+              "stationName": "Rotterdam Alexander",
+              "time": "08:15",
+              "track": "2"
+            },
+            {
+              "stepType": "Departure",
+              "stationName": "Rotterdam Alexander",
+              "time": "08:25",
+              "track": "1"
+            },
+            {
+              "stepType": "Arrival",
+              "stationName": "Gouda",
+              "time": "08:25",
+              "track": "1"
+            },
+            {
+              "stepType": "Departure",
+              "stationName": "Gouda",
+              "time": "08:25",
+              "track": "1"
+            },
+            {
+              "stepType": "Arrival",
+              "stationName": "Utrecht Central",
+              "time": "08:25",
+              "track": "1"
+            }
+          ]
+        },
+        {
+          "segment_id": 2,
+          "duration": 25,
+          "trainType": "Intercity",
+          "trainId": "IC1234",
+          "seriesName": "A120",
+          "steps": [
+            {
+              "step_id": 1,
+              "stepType": "Departure",
+              "stationName": "Rotterdam Central",
+              "time": "08:00",
+              "track": "5"
+            },
+            {
+              "stepType": "Arrival",
+              "stationName": "Rotterdam Alexander",
+              "time": "08:15",
+              "track": "2"
+            },
+            {
+              "stepType": "Departure",
+              "stationName": "Rotterdam Alexander",
+              "time": "08:25",
+              "track": "1"
+            },
+            {
+              "stepType": "Arrival",
+              "stationName": "Gouda",
+              "time": "08:25",
+              "track": "1"
+            },
+            {
+              "stepType": "Departure",
+              "stationName": "Gouda",
+              "time": "08:25",
+              "track": "1"
+            },
+            {
+              "stepType": "Arrival",
+              "stationName": "Utrecht Central",
+              "time": "08:25",
+              "track": "1"
+            }
+          ]
+        },
+        
+      ]
+    }
+

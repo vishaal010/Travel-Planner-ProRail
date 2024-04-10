@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@200&display=swap');
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+.background-image {
+    background-image: url('assets/prorail_background.png');
+    background-size: cover;
+    background-position: center;
+}
+
+.background-overlay {
+    background-color: rgba(255, 0, 0, 0.5); /* Adjust color and opacity */
+}
+
+.button-bg-transition {
+    background-size: 200% 100%;
+    background-image: linear-gradient(to left, #gray-color 50%, #red-color 50%);
+    transition: background-position 1s;
+}
+
+.button-bg-transition:hover {
+    background-position: -100% 0;
+}
+
+.station-details {
+    position: relative;
+    padding-left: 32px; /* Adjust this value to align the dots correctly with your layout */
+  }
+  
+.station-details::before {
+    content: '';
+    position: absolute;
+    left: 16px; /* Half your padding-left value to center the line */
+    top: 0;
+    bottom: 0;
+    width: 2px; /* Line thickness */
+    background-repeat: no-repeat;
+    background-image: linear-gradient(red 50%, transparent 50%);
+    background-size: 2px 24px; /* Width and space between dots */
+    background-position: left center;
+  }
+  
+.station-dot {
+    width: 12px; /* Dot size */
+    height: 12px; /* Dot size */
+    border-radius: 50%;
+    background-color: red;
+    position: absolute;
+    left: 10px; /* Adjust to align dot with the dotted line */
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+
+  .cursor-default {
+    cursor: default;
+  }

@@ -1,0 +1,168 @@
+  import TrainBlock from "./trainblock/TrainBlock";
+  import { Train } from "../../types";
+  import StationDetails from "./stationdetails/StationDetails"; // Make sure the path is correct
+
+
+  interface ModelCardProps {
+    trains: Train[];
+    showDetails: boolean;
+    onToggleShowDetails: () => void;
+    isFirstCard: boolean;
+    isLastCard: boolean;
+  }
+
+  const ModelCard: React.FC<ModelCardProps> = ({
+    trains,
+    showDetails,
+    onToggleShowDetails,
+  }) => {
+
+    const maxDuration = Math.max(...trains.map(train => train.duration));
+
+
+
+
+    return (
+      <div className="shadow-lg rounded-lg overflow-hidden border border-black bg-white mb-2">
+      {/* Top bar with duration and possibly other info */}
+      <div className="text-black p-2 flex justify-center items-center">
+        {/* Logo Image */}
+        <img src="/assets/clock.svg" className="w-4 h-6 mr-2" alt="Logo" />
+        {/* Duration Text */}
+        <span>{train.duration}m</span>
+        <div className="dropdown dropdown-end">
+  <div tabIndex={0} role="button" className="btn btn-circle btn-ghost btn-xs text-info">
+    <svg tabIndex={0} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-4 h-4 stroke-current"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+  </div>
+  <div tabIndex={0} className="card compact dropdown-content z-[1] shadow bg-base-100 rounded-box w-64">
+    <div tabIndex={0} className="card-body">
+      <h2 className="card-title">You needed more info?</h2> 
+      <p>Here is a description!</p>
+    </div>
+  </div>
+</div>
+      </div>
+
+        {/* Main content area */}
+        <div className="p-4">
+          <div className="flex space-x-2 items-center">
+            {/* Train info */}
+            {trains.map(train => (
+              <TrainBlock 
+                key={train.id} 
+                train={train.name} 
+                duration={train.duration}
+                maxDuration={maxDuration}
+              />
+            ))}
+          </div>
+
+          {/* Station information below the train blocks */}
+          <div className="flex justify-between items-center mt-2">
+              <div className="text-sm text-gray-600">
+                  <span>Schiedam Centrum</span>
+              </div>
+              <div className="text-sm text-gray-600">
+                  <span>Utrecht Centraal</span>
+              </div>
+          </div>
+
+          <hr className="my-2 border-gray-200" /> {/* Here is the horizontal line */}
+
+
+          <div className="mt-2">
+  <ul className="list-none m-0 p-0">
+    <li className="text-black flex items-center mb-1">
+      {/* Increase size with w-6 h-6 or another size class */}
+      <img src="/assets/train.svg" className="w-6 h-4 mr-2" alt="Train frequency" />
+      1/uur
+           <div className="dropdown dropdown-end">
+  <div tabIndex={0} role="button" className="btn btn-circle btn-ghost btn-xs text-info">
+    <svg tabIndex={0} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-4 h-4 stroke-current"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+  </div>
+  <div tabIndex={0} className="card compact dropdown-content z-[1] shadow bg-base-100 rounded-box w-64">
+    <div tabIndex={0} className="card-body">
+      <h2 className="card-title">You needed more info?</h2> 
+      <p>Here is a description!</p>
+    </div>
+  </div>
+</div>
+    </li>
+    <li className="text-black flex items-center mb-1">
+      {/* Adjust size as needed */}
+      <img src="/assets/transfer.svg" className="w-6 h-6 mr-2" alt="Transfer Icon" />
+      1 Overstap
+    </li>
+    <li className="text-black flex items-center">
+      {/* Adjust size as needed */}
+      <img src="/assets/hour_division.svg" className="w-6 h-4 mr-2" alt="Third Icon" />
+      10/20/10/20
+      <div className="dropdown dropdown-end">
+  <div tabIndex={0} role="button" className="btn btn-circle btn-ghost btn-xs text-info">
+    <svg tabIndex={0} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-4 h-4 stroke-current"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+  </div>
+  <div tabIndex={0} className="card compact dropdown-content z-[1] shadow bg-base-100 rounded-box w-64">
+    <div tabIndex={0} className="card-body">
+      <h2 className="card-title">You needed more info?</h2> 
+      <p>Here is a description!</p>
+    </div>
+  </div>
+</div>
+    </li>
+  </ul>
+</div>
+
+    {/* Details button */}
+  {/* Details button */}
+  <div className="text-red-600 mt-4 cursor-pointer flex justify-end items-center" onClick={onToggleShowDetails}>
+    <span>Details</span>
+    <img
+      src="/assets/arrow_up.svg" // Ensure this is the correct path to your image file
+      alt="Toggle Details"
+      className={`ml-2 transition-transform duration-500 ${showDetails ? 'rotate-180' : ''}`} // Add transition styles for rotation
+      style={{ width: '16px', height: '16px' }} // Set specific width and height
+    />
+  </div>
+
+  {/* Conditional horizontal line that appears when details are shown */}
+  {showDetails && (
+    <hr className="my-2 border-gray-200" />
+  )}
+
+
+  {/* Expandable details with transition */}
+  <div
+    className={`transition-max-height duration-500 ease-in-out overflow-hidden ${showDetails ? 'max-h-[1000px]' : 'max-h-0'}`} // Adjusted max-height for demonstration
+    >
+    {showDetails && (
+      <StationDetails
+        departureTime="20m"
+        arrivalTime="1u20m"
+        stations={[
+          {
+            name: "Schiedam Centrum",
+            track: "Spoor 1",
+            details: "NS Sprinter\nRichting Rotterdam Centraal\n1 Tussenstop"
+          },
+          {
+            name: "Rotterdam Centraal",
+            track: "Spoor 3",
+            details: "Linkerzijde Uitstappen\n6 min. overstaptijd"
+          },
+          {
+            name: "Rotterdam Centraal",
+            track: "Spoor 3",
+            details: "Linkerzijde Uitstappen\n6 min. overstaptijd"
+          },
+          
+        ]}
+      />
+    )}
+  </div>
+
+      </div>
+      </div>
+    );
+  }
+
+  export default ModelCard;
