@@ -19,7 +19,7 @@ export default function UploadButton({ onFilesUploaded }) {
         const filesToUpload = inputList.filter(file => file instanceof File) as File[];
         if (filesToUpload.length) {
             onFilesUploaded(filesToUpload);
-            navigate('/model'); // Navigate after files are set to be uploaded
+            navigate('/api/model'); // Navigate after files are set to be uploaded
         }
     };
     const toggleModal = () => {

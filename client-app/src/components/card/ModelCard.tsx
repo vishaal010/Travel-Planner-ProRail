@@ -1,36 +1,41 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import TrainBlock from './trainblock/TrainBlock'
 import StationDetails from './stationdetails/StationDetails'
-import { TravelAdvice } from '../../types'
+import { ReisAdvies } from '../../types'
 import TooltipComponent from './../tooltip/tooltip'
 import React from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface ModelCardProps {
-  travelAdvice: TravelAdvice
+  reisAdvies: ReisAdvies
   showDetails: boolean
   onToggleShowDetails: () => void
 }
 
 const ModelCard: React.FC<ModelCardProps> = ({
-  travelAdvice,
+  reisAdvies,
   showDetails,
   onToggleShowDetails,
 }) => {
-  // Combine the main train and the transfers into a single array
   const maxDuration = Math.max(
-    ...travelAdvice.segments.map((segment) => segment.duration)
+    ...reisAdvies.segmenten.map((segment) => segment.segmentDuur)
   )
   const [isLoading, setIsLoading] = useState(true)
   const [intermediateVisibility, setIntermediateVisibility] = useState({})
+  const detailsRef = useRef(null) // Add this line to create a ref for the details div
 
-  // Initialize the intermediate visibility state based on the segments
+  const variants = {
+    open: { opacity: 1, height: 'auto' },
+    collapsed: { opacity: 0, height: 0 },
+  }
+
   useEffect(() => {
-    const initialVisibility = travelAdvice.segments.reduce((acc, segment) => {
-      acc[segment.segment_id] = false // Start with all intermediate stations hidden
+    const initialVisibility = reisAdvies.segmenten.reduce((acc, segment) => {
+      acc[segment.segmentId] = false
       return acc
     }, {})
     setIntermediateVisibility(initialVisibility)
-  }, [travelAdvice.segments])
+  }, [reisAdvies.segmenten])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -46,15 +51,15 @@ const ModelCard: React.FC<ModelCardProps> = ({
     }))
   }
 
-  const processStations = (steps) => {
-    return steps.reduce((acc, currentStep) => {
-      const lastStep = acc[acc.length - 1]
-      if (lastStep && lastStep.stationName === currentStep.stationName) {
-        if (currentStep.stepType === 'Arrival') {
-          acc[acc.length - 1] = currentStep
+  const processStations = (stappen) => {
+    return stappen.reduce((acc, currentStap) => {
+      const lastStap = acc[acc.length - 1]
+      if (lastStap && lastStap.stationNaam === currentStap.stationNaam) {
+        if (currentStap.stapType === 'Aankomst') {
+          acc[acc.length - 1] = currentStap
         }
       } else {
-        acc.push(currentStep)
+        acc.push(currentStap)
       }
       return acc
     }, [])
@@ -80,8 +85,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
     <div className="shadow-lg rounded-lg overflow-hidden border border-black bg-white mb-2">
       <div className="text-black p-2 flex justify-center items-center">
         <img src="/assets/clock.svg" className="w-4 h-6 mr-2" alt="Logo" />
-        <span>{travelAdvice.travelDuration}m</span>{' '}
-        {/* Updated to travelDuration */}
+        <span>{reisAdvies.reisDuur}m</span> {/* Updated to travelDuration */}
         <TooltipComponent message="Reistijd!" position="right">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -101,18 +105,16 @@ const ModelCard: React.FC<ModelCardProps> = ({
 
       <div className="p-4">
         <div className="flex space-x-2 items-center">
-          {travelAdvice.segments.map((segment, index) => (
+          {reisAdvies.segmenten.map((segment, index) => (
             <TrainBlock
               key={index}
-              train={segment.trainType}
-              duration={segment.duration}
+              train={segment.treinType}
+              duration={segment.segmentDuur}
               maxDuration={maxDuration}
             />
           ))}
         </div>
-
         <hr className="my-2 border-gray-200" />
-
         <div className="mt-2">
           <ul className="list-none m-0 p-0">
             <li className="text-black flex items-center mb-1">
@@ -121,7 +123,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
                 className="w-6 h-4 mr-2"
                 alt="Train frequency"
               />
-              <p className="tracking-wide">{travelAdvice.frequency}/u</p>
+              <p className="tracking-wide">{reisAdvies.frequentie}/u</p>
               <TooltipComponent
                 message="Aantal treinen per uur!"
                 position="top"
@@ -147,8 +149,8 @@ const ModelCard: React.FC<ModelCardProps> = ({
                 className="w-6 h-5 mr-2"
                 alt="Transfer Icon"
               />
-              {travelAdvice.segments.length - 1 > 0
-                ? `${travelAdvice.segments.length - 1} Overstap(pen)`
+              {reisAdvies.segmenten.length - 1 > 0
+                ? `${reisAdvies.segmenten.length - 1} Overstap(pen)`
                 : 'Directe verbinding'}
               <TooltipComponent message="Aantal Overstappen" position="top">
                 <svg
@@ -172,7 +174,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
                 className="w-6 h-4 mr-2"
                 alt="Hour Division Icon"
               />
-              <p className="tracking-wide">{travelAdvice.timePattern}</p>
+              <p className="tracking-wide">{reisAdvies.uurPatroon}</p>
               <TooltipComponent message="Uurverdeling" position="right">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -205,71 +207,81 @@ const ModelCard: React.FC<ModelCardProps> = ({
             style={{ width: '16px', height: '16px' }}
           />
         </div>
-        {showDetails && (
-          <>
-            <hr className="my-2 border-gray-200" />
+        <div
+          className="details-content"
+          ref={detailsRef}
+          style={{
+            overflow: 'hidden',
+            transition: 'max-height 0.5s ease-in-out',
+          }}
+        >
+          <AnimatePresence>
+            {showDetails && (
+              <motion.div
+                initial="collapsed"
+                animate="open"
+                exit="collapsed"
+                variants={variants}
+                transition={{ duration: 0.5, ease: 'easeInOut' }}
+              >
+                <hr className="my-2 border-gray-200" />
 
-            {travelAdvice.segments.map(
-              (segment, segmentIndex, segmentArray) => {
-                const isLastSegment = segmentIndex === segmentArray.length - 1
+                {reisAdvies.segmenten.map(
+                  (segment, segmentIndex, segmentArray) => {
+                    const isLastSegment =
+                      segmentIndex === segmentArray.length - 1
 
-                const uniqueStations = processStations(segment.steps)
+                    const uniqueStations = processStations(segment.stappen)
 
-                return (
-                  <React.Fragment key={segment.segment_id}>
-                    {segmentIndex !== 0 && (
-                      <div className="relative my-4 flex items-center justify-center">
-                        <div className="flex-grow border-t border-red-950 border-dotted"></div>
-                        <img
-                          src="/assets/man_walking.svg"
-                          alt="Icon"
-                          className="mx-2"
-                          style={{
-                            width: '32px',
-                            height: '32px',
-                            backgroundColor: 'white',
-                          }}
+                    return (
+                      <React.Fragment key={segment.segmentId}>
+                        {segmentIndex !== 0 && (
+                          <div className="relative my-4 flex items-center justify-center">
+                            <div className="flex-grow border-t border-red-950 border-dotted"></div>
+                            <img
+                              src="/assets/man_walking.svg"
+                              alt="Icon"
+                              className="mx-2"
+                              style={{
+                                width: '32px',
+                                height: '32px',
+                                backgroundColor: 'white',
+                              }}
+                            />
+                            <span
+                              className="px-2 bg-white text-xs font-light text-gray-500"
+                              style={{
+                                marginLeft: '-16px',
+                                lineHeight: '12px',
+                              }}
+                            >
+                              5min
+                            </span>
+                            <div className="flex-grow border-t border-red-950 border-dotted"></div>
+                          </div>
+                        )}
+                        <StationDetails
+                          departureTime={segment.stappen[0].tijd}
+                          arrivalTime={
+                            segment.stappen[segment.stappen.length - 1].tijd
+                          }
+                          stations={uniqueStations}
+                          showIntermediateStations={
+                            intermediateVisibility[segment.segmentId]
+                          }
+                          toggleIntermediateStations={() =>
+                            toggleIntermediateVisibility(segment.segmentId)
+                          }
+                          segmentId={segment.segmentId}
                         />
-                        <span
-                          className="px-2 bg-white text-xs font-light text-gray-500" // adjust the styling as needed
-                          style={{
-                            marginLeft: '-16px', // Adjust this value to move text closer to the icon
-                            lineHeight: '12px', // to vertically center text with the icon
-                          }}
-                        >
-                          {/* Your text here */}
-                          5min
-                        </span>
-                        <div className="flex-grow border-t border-red-950 border-dotted"></div>
-                      </div>
-                    )}
-
-                    <StationDetails
-                      departureTime={
-                        uniqueStations.find(
-                          (step) => step.stepType === 'Departure'
-                        )?.time || ''
-                      }
-                      arrivalTime={
-                        uniqueStations.find(
-                          (step) => step.stepType === 'Arrival'
-                        )?.time || ''
-                      }
-                      stations={uniqueStations}
-                      showIntermediateStations={
-                        intermediateVisibility[segment.segment_id]
-                      }
-                      toggleIntermediateStations={() =>
-                        toggleIntermediateVisibility(segment.segment_id)
-                      }
-                      segmentId={segment.segment_id}
-                    />
-                  </React.Fragment>
-                )
-              }
+                      </React.Fragment>
+                    )
+                  }
+                )}
+              </motion.div>
             )}
-          </>
-        )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   )

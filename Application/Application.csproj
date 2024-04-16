@@ -8,6 +8,12 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="MediatR" Version="12.2.0" />
+    <PackageReference Include="Reisplanner.Adapter" Version="1.0.0-alpha" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Graaf\" />
+    <Folder Include="Reisplanner-package\" />
   </ItemGroup>
 
   <PropertyGroup>

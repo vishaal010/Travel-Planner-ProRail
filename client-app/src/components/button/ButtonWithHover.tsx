@@ -17,7 +17,7 @@ const ButtonWithHover: React.FC<ButtonWithHoverProps> = ({
     onClick,
 }) => {
     return (
-        <button onClick={onClick} className={`mt-4 group relative h-12 w-48 overflow-hidden text-lg shadow flex items-center justify-center ${bgColor} ${additionalClasses} transition-colors duration-250 ease-in-out`}>
+        <button onClick={onClick} className={`mt-4 group relative h-11 w-40 overflow-hidden text-lg shadow flex items-center justify-center rounded ${bgColor} ${additionalClasses} transition-colors duration-250 ease-in-out`}>
             <span className={`relative z-10 ${textColor}`}>{text}</span>
             {imgSrc && <img src={imgSrc} className="ml-2 h-6 w-6 z-10" alt="Button icon" />} {/* Image on the right of the text, with z-index */}
             <div

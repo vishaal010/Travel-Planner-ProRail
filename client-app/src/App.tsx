@@ -32,7 +32,7 @@ function App() {
                 <main className="flex-grow">
                     <Routes>
                     <Route path="/" element={<HomePage activities={activities} onFilesUploaded={handleFilesUploaded} />} />
-                    <Route path="/model" element={<ModelPage uploadedFiles={uploadedFiles} />} />
+                    <Route path="/api/model" element={<ModelPage uploadedFiles={uploadedFiles} />} />
                     </Routes>
                 </main>
                 <Footer />

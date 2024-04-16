@@ -1,29 +1,35 @@
-export interface Step {
-  stepType: string
-  stationName: string
-  time?: string // For intermediate stops
-  track: string
+export enum StapType {
+  Aankomst = 'Aankomst',
+  Vertrek = 'Vertrek',
+}
+
+export interface Stap {
+  stapType: StapType;
+  stationNaam: string;
+  tijd?: string; // Voor tussenstops
+  spoor: string;
 }
 
 export interface Segment {
-  segment_id: number // Make sure to use camelCase for consistency, segmentId is preferred
-  duration: number
-  trainType: string
-  trainId: string
-  seriesName: string
-  steps: Step[]
+  segmentId: number; // Gebruik camelCase voor consistentie, segmentId wordt aanbevolen
+  segmentDuur: number;
+  treinType: string;
+  treinId: string;
+  serieNaam: string;
+  stappen: Stap[];
 }
 
-export interface TravelAdvice {
-  adviceId: number // Add adviceId here if it's unique per TravelAdvice
-  travelDuration: number
-  timePattern: string
-  frequency: number
-  numberOfTransfers: number
-  segments: Segment[]
+export interface ReisAdvies {
+  adviesId: number; // Voeg adviesId hier toe als het uniek is voor ReisAdvies
+  reisDuur: number;
+  uurPatroon: string;
+  frequentie: number;
+  aantalOverstappen: number;
+  segmenten: Segment[];
 }
 
-export interface ModelWithTravelAdvices {
-  modelId: number // Identifier for the model
-  travelAdvices: TravelAdvice[]
+export interface ModelMetReisAdviezen {
+  modelNaam: string;
+  modelId: number; // Identifier voor het model
+  reisAdviezen: ReisAdvies[];
 }

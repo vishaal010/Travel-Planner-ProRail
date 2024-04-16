@@ -33,12 +33,12 @@ const SearchSection = ({ onSearchInitiated }) => {
         />
         <div className="flex justify-center md:justify-end">
           <ButtonWithHover
-            onClick={handleSearchClick} // Updated to use the new handler
+            onClick={handleSearchClick}
             text="Plannen"
             bgColor="bg-white"
             hoverBgColor="bg-gray-300"
             textColor="text-black"
-            imgSrc="assets/search.svg"
+            imgSrc="/assets/search.png"
             className="ml-auto"
           />
         </div>

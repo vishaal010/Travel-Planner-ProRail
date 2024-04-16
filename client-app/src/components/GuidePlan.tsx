@@ -42,7 +42,6 @@ export default function GuidePlan() {
       <h2 className="text-2xl md:text-3xl text-blue-950 font-bold lg:text-4xl text-center mb-8 font-roboto">
         Plan uw Route naar Perfectie
       </h2>
-      {/* Use the mx-auto to center the image and max-w-* to control the size */}
 
       <div className="relative grid md:grid-cols-3 gap-4">
         {steps.map((step, index) => (
@@ -51,8 +50,8 @@ export default function GuidePlan() {
             variants={stepVariants}
             initial="offscreen"
             whileInView="onscreen"
-            viewport={{ once: true, amount: 0.8 }}
-            transition={{ delay: index * 0.8 }} // Reduce the delay time here
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ delay: index * 0.2 }}
             className="flex flex-col items-center text-center p-4 rounded-lg relative z-10"
           >
             <img
@@ -63,7 +62,7 @@ export default function GuidePlan() {
             <h3 className="text-lg font-semibold font-roboto mb-2">
               Stap {step.id}
             </h3>
-            <p className="font-extralight font-roboto">{step.title}</p>
+            <p className="font font-roboto">{step.title}</p>
           </motion.div>
         ))}
         {/* Tenor GIF goes here */}

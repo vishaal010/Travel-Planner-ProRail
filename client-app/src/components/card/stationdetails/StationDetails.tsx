@@ -1,21 +1,22 @@
 import React, { useState, useRef, useEffect, createRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 type Station = {
-  stationName: string
-  track: string
+  stationNaam: string
+  spoor: string
   details?: string
-  travelTime?: string
-  hasIntermediateStations?: boolean
-  stepType: string
-  time: string
+  reisTijd?: string // Assuming 'travelTime' is 'reisTijd' in Dutch
+  hasIntermediateStations?: boolean // Assuming this is the translation for 'hasIntermediateStations'
+  stapType: string // Assuming 'stepType' translates to 'stapType'
+  tijd: string
 }
 
 type StationDetailsProps = {
-  departureTime: string
-  arrivalTime: string
+  vertrekTijd: string // Assuming 'departureTime' translates to 'vertrekTijd'
+  aankomstTijd: string // Assuming 'arrivalTime' translates to 'aankomstTijd'
   stations: Station[]
-  showIntermediateStations: boolean
-  toggleIntermediateStations: (segmentId: number) => void
+  showIntermediateStations: boolean // Assuming this is the translation for 'showIntermediateStations'
+  toggleIntermediateStations: (segmentId: number) => void // Assuming this is the translation for 'toggleIntermediateStations'
   segmentId: number
 }
 
@@ -30,6 +31,11 @@ const StationDetails: React.FC<StationDetailsProps> = ({
   const stationRefs = useRef(stations.map(() => createRef<HTMLLIElement>()))
   const [stationTimesTop, setStationTimesTop] = useState<number[]>([])
 
+  const variants = {
+    open: { opacity: 1, height: 'auto' },
+    collapsed: { opacity: 0, height: 0 },
+  }
+
   useEffect(() => {
     setStationTimesTop(
       stationRefs.current.map((ref) => ref.current?.offsetTop ?? 0)
@@ -41,13 +47,10 @@ const StationDetails: React.FC<StationDetailsProps> = ({
     : [stations[0], stations[stations.length - 1]]
 
   return (
-    // <ol className="relative pl-28">
-    // <div className="absolute left-[96.9px] top-[20px] w-0.5 bg-gray-950 bottom-[25px]"></div>
     <ol className="relative pl-[100px]">
       <div className="absolute left-[85.1px] top-[20px] w-0.5 bg-gray-950 bottom-[25px]"></div>
       <div className="absolute left-0">
         {displayedStations.map((station, index, array) => {
-          // Calculate the position for the text to be placed in the middle between the times
           const middlePosition =
             index < array.length - 1
               ? `calc((${stationTimesTop[index]}px + ${
@@ -55,6 +58,7 @@ const StationDetails: React.FC<StationDetailsProps> = ({
                 }px) / 2)`
               : null
 
+          // Left side of the stationdetails
           return (
             <React.Fragment key={index}>
               <span
@@ -65,7 +69,7 @@ const StationDetails: React.FC<StationDetailsProps> = ({
                   left: '0',
                 }}
               >
-                {station.time}
+                {station.tijd}
               </span>
               {/* Only render the text for all but the last station */}
               {index < array.length - 1 && (
@@ -75,10 +79,9 @@ const StationDetails: React.FC<StationDetailsProps> = ({
                     position: 'absolute',
                     top: middlePosition,
                     left: '20px',
-                    transform: 'translateY(50%)', // Center vertically
+                    transform: 'translateY(50%)',
                   }}
                 >
-                  {/* Replace 'In-Between' with your actual text */}
                   10+
                 </span>
               )}
@@ -86,6 +89,7 @@ const StationDetails: React.FC<StationDetailsProps> = ({
           )
         })}
       </div>
+
       {displayedStations.map((station, index) => (
         <li
           ref={stationRefs.current[index]}
@@ -99,11 +103,18 @@ const StationDetails: React.FC<StationDetailsProps> = ({
           <div className="flex justify-between items-center pt-1">
             <div>
               <p className="text-base font-semibold text-gray-900">
-                {station.stationName}
+                {station.stationNaam}
               </p>
-              <p className=" text-xs text-gray-500">{station.stepType}</p>
+              {/* Change display based on index */}
+              <p className="text-xs text-gray-500">
+                {index === 0
+                  ? 'Departure'
+                  : index === displayedStations.length - 1
+                  ? 'Arrival'
+                  : 'Intermediate'}
+              </p>
             </div>
-            <div className="text-xs">Spoor {station.track}</div>
+            <div className="text-xs">Spoor {station.spoor}</div>
           </div>
           {index === 0 && (
             <>

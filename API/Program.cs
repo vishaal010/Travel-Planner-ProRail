@@ -1,14 +1,26 @@
+using System.Text.Json;
 using API.Extensions;
+using Application.Services;
 using Microsoft.EntityFrameworkCore;
+using MediatR;
 using Persistence;
+using Application.Models.Handlers; 
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+});
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddScoped<MockDataService>();
+
+builder.Services.AddMediatR(cfg => {
+    cfg.RegisterServicesFromAssembly(typeof(GetModelsQueryHandler).Assembly);
+});
 builder.Services.AddApplicationServices(builder.Configuration);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -32,12 +44,11 @@ try
     var context = services.GetRequiredService<DataContext>();
     await context.Database.MigrateAsync();
     await Seed.SeedData(context);
-    
 }
 catch (Exception ex)
 {
     var logger = services.GetRequiredService<ILogger<Program>>();
-    logger.LogError(ex, "An error occured");
+    logger.LogError(ex, "An error occurred during migration");
 }
 
 app.Run();

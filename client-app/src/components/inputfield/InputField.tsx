@@ -27,14 +27,15 @@ const InputField = ({ inputOne, setInputOne, inputTwo, setInputTwo }) => {
       {/* Swap button */}
       <button
         onClick={swapValues}
-        className="md:self-center transform rotate-90 md:rotate-0"
+        className="flex md:self-center items-center justify-center p-1" // Add padding as needed
       >
-        {/* Make sure you have the correct path to your SVG asset */}
-        <svg className="w-6 h-6" viewBox="0 0 24 24" /* Other SVG props */>
-          {/* SVG path here */}
-        </svg>
+        {/* Left arrow */}
+        <img
+          src="/assets/arrow_bothways.svg"
+          alt="Arrow bothways"
+          className="w-12 h-12 mt-6"
+        />
       </button>
-
       {/* Input field for "Naar" */}
       <div className="w-full md:w-1/2">
         <label htmlFor="inputTwo" className="block text-white text-sm mb-2">

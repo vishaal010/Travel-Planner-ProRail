@@ -6,6 +6,26 @@ import { Player } from '@lottiefiles/react-lottie-player'
 export default function ModelPage({ uploadedFiles }) {
   const [showToast, setShowToast] = useState(false)
   const [showLottie, setShowLottie] = useState(true)
+  const [modelData, setModelData] = useState(null) // State to store the fetched data
+
+  // Fetch the model data from the backend
+  const fetchModelData = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/model')
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      console.log(data)
+      setModelData(data)
+    } catch (error) {
+      console.error('Could not fetch the model data:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchModelData()
+  }, []) 
 
   const displayToast = () => {
     setShowToast(true)
@@ -48,11 +68,15 @@ export default function ModelPage({ uploadedFiles }) {
       )}
 
       {!showLottie && (
-        <div className="flex justify-around w-full px-4 lg:px-12 mt-7 mb-8">
-          {uploadedFiles.map((file, index) => (
-            <CardContainer key={index} file={file} />
-          ))}
-        </div>
+          <div className="flex flex-col md:flex-row justify-around w-full px-4 lg:px-12 mt-7 mb-8 gap-4">
+            {modelData && modelData.map((model, index) => (
+                <CardContainer
+                    key={`model-${index}`}
+                    model={model}
+                    className="mb-4 md:mb-0 md:mx-2"
+                />
+            ))}
+          </div>
       )}
       {showToast && (
         <div className="toast">
