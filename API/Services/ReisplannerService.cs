@@ -54,7 +54,7 @@ namespace API.Services
 
                 foreach (var advies in adviezen)
                 {
-                    var adviesOutput = advies.ToString(); 
+                    var adviesOutput = advies.ToString(instellingen); 
                     output.Add(adviesOutput);
                     _logger.LogInformation("Processed advies: {Advies}", adviesOutput);
                 }
