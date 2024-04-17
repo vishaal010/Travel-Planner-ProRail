@@ -15,13 +15,40 @@ export default function UploadButton({ onFilesUploaded }) {
         setInputList(newInputList);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const filesToUpload = inputList.filter(file => file instanceof File) as File[];
         if (filesToUpload.length) {
-            onFilesUploaded(filesToUpload);
-            navigate('/api/model'); // Navigate after files are set to be uploaded
+            // Create a new FormData instance to hold the file data
+            const formData = new FormData();
+            // Append the file to the FormData instance, 'file' is the key that the backend will look for
+            formData.append('file', filesToUpload[0], filesToUpload[0].name);
+
+            try {
+                // Make a POST request to the upload endpoint of your backend
+                const response = await fetch('http://localhost:5000/api/graaf/upload', {
+                    method: 'POST',
+                    body: formData // Send the file in the request body
+                    // Do not set content-type header for FormData, the browser will set it with the correct boundary
+                });
+
+                // Handle the response from the backend
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log(result);
+
+                onFilesUploaded(filesToUpload);
+
+                // You might want to navigate to a new route after successful upload
+                navigate('/api/model');
+            } catch (error) {
+                console.error('There was a problem with the file upload operation:', error);
+            }
         }
     };
+
     const toggleModal = () => {
         const modal = document.getElementById('uploadModal');
         if (modal instanceof HTMLDialogElement) {
@@ -47,7 +74,7 @@ export default function UploadButton({ onFilesUploaded }) {
                             <h2 className='font-roboto mb-4'>Bestand {index + 1}</h2>
                             <input
                                 type="file"
-                                accept=".txt"
+                                accept=".txtpb"
                                 onChange={(e) => handleFileChange(e, index)}
                                 className="file-input file-input-ghost file-input-primary w-full max-w-xs mb-2"
                             />

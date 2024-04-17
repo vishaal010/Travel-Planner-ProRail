@@ -1,64 +1,58 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using API.Services;
+using Reisplanner.Adapter;
 
-
-
-namespace API.Controllers;
-
-[Route("api/[controller]")]
-
-public class GraafController : ControllerBase
+namespace API.Controllers
 {
-    private readonly ILogger<GraafController> _logger;
-    private readonly IWebHostEnvironment _environment;
-    private readonly string _targetFolder;
-
-    public GraafController(IWebHostEnvironment environment, ILogger<GraafController> logger)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class GraafController : ControllerBase
     {
-        _environment = environment;
-        _logger = logger;
-        _targetFolder = Path.Combine(_environment.ContentRootPath, "Graaf");
-    }
+        private readonly ILogger<GraafController> _logger;
+        private readonly IWebHostEnvironment _environment;
+        private readonly IReisplannerService _reisplannerService;
+        private readonly string _targetFolder;
 
-    [HttpPost("upload")]
-    public async Task<IActionResult> Upload(IFormFile file)
-    {
-        if (file == null || file.Length == 0)
-            return BadRequest("No file uploaded.");
-
-        var filePath = Path.Combine(_targetFolder, file.FileName);
-
-        // Ensure the directory exists
-        Directory.CreateDirectory(_targetFolder);
-
-        try
+        public GraafController(IWebHostEnvironment environment, ILogger<GraafController> logger, IReisplannerService reisplannerService)
         {
-            using (var stream = System.IO.File.Create(filePath))
+            _environment = environment;
+            _logger = logger;
+            _reisplannerService = reisplannerService;
+            _targetFolder = Path.Combine(_environment.ContentRootPath, "Graaf");
+        }
+
+        [HttpPost("upload")]
+        public async Task<IActionResult> Upload(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
             {
-                await file.CopyToAsync(stream);
-                // After copying the file to the stream
+                _logger.LogWarning("Upload attempted with no file.");
+                return BadRequest("No file uploaded.");
+            }
+
+            var filePath = Path.Combine(_targetFolder, file.FileName);
+            Directory.CreateDirectory(_targetFolder); // Ensure directory exists
+
+            try
+            {
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
                 _logger.LogInformation($"File {file.FileName} uploaded successfully to {filePath}");
 
-                // Confirm the file exists
-                if (System.IO.File.Exists(filePath))
-                {
-                    _logger.LogInformation($"Confirmed the file exists at {filePath}");
-                }
-                else
-                {
-                    _logger.LogError($"The file was not found at {filePath}");
-                }
-
+                var processingResult = await _reisplannerService.ProcessGraphAndGetAdviceAsync(filePath);
+                return Ok(processingResult);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading file.");
+                return StatusCode(500, "Internal server error during file upload.");
             }
         }
-        catch (Exception ex)
-        {
-            // Log the exception
-            // You might want to return a different type of ActionResult to indicate the error.
-            _logger.LogError(ex, "Error uploading file.");
-            return StatusCode(500, "Internal server error");
-        }
-
-        return Ok(new { filePath });
     }
 }
