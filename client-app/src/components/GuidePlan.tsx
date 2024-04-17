@@ -38,9 +38,9 @@ export default function GuidePlan() {
   ]
 
   return (
-    <div className="bg-gray-750 p-12">
+    <div className="bg-gray-750 p-8">
       <h2 className="text-2xl md:text-3xl text-blue-950 font-bold lg:text-4xl text-center mb-8 font-roboto">
-        Plan uw Route naar Perfectie
+        Vergelijk hier je Modellen
       </h2>
 
       <div className="relative grid md:grid-cols-3 gap-4">
@@ -65,7 +65,6 @@ export default function GuidePlan() {
             <p className="font font-roboto">{step.title}</p>
           </motion.div>
         ))}
-        {/* Tenor GIF goes here */}
       </div>
     </div>
   )

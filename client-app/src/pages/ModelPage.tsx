@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react'
 import SearchSection from '../components/SearchSection'
-// import CardContainer from '../components/card/CardContainer.tsx'
+import CardContainer from '../components/card/CardContainer.tsx'
 import { Player } from '@lottiefiles/react-lottie-player'
 
 export default function ModelPage({ uploadedFiles }) {
   const [showToast, setShowToast] = useState(false)
   const [showLottie, setShowLottie] = useState(true)
   const [modelData, setModelData] = useState(null)
+  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [data, setData] = useState([]);
-
 
   // Fetch the model data from the backend
   useEffect(() => {
@@ -22,8 +21,7 @@ export default function ModelPage({ uploadedFiles }) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const result = await response.json();
-        console.log(result)
-        setData(result);
+        (result);
       } catch (e) {
         setError(e.message);
       } finally {
@@ -76,8 +74,12 @@ export default function ModelPage({ uploadedFiles }) {
 
       {!showLottie && (
           <div className="flex flex-col md:flex-row justify-around w-full px-4 lg:px-12 mt-7 mb-8 gap-4">
-            {data.map((advies, index) => (
-                <li key={index}>{advies}</li>
+            {modelData && modelData.map((model, index) => (
+                <CardContainer
+                    key={`model-${index}`}
+                    model={model}
+                    className="mb-4 md:mb-0 md:mx-2"
+                />
             ))}
           </div>
       )}
