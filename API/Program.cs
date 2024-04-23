@@ -15,7 +15,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 });
 
 // Register ReisplannerService for dependency injection
-builder.Services.AddScoped<IReisplannerService, ReisplannerService>();
+builder.Services.AddSingleton<IReisplannerService, ReisplannerService>();
+// builder.Services.AddSingleton<FileStorageService>();
 
 // Configure CORS (if needed)
 builder.Services.AddCors(options =>

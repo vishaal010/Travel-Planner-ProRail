@@ -7,31 +7,44 @@ export default function ModelPage({ uploadedFiles }) {
   const [showToast, setShowToast] = useState(false)
   const [showLottie, setShowLottie] = useState(true)
   const [modelData, setModelData] = useState(null)
-  const [data, setData] = useState([]);
+  const [van, setVan] = useState('');
+  const [naar, setNaar] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch the model data from the backend
+  // @ts-ignore
+  const handleSearchInitiated = (data) => {
+    setShowLottie(false)
+    setVan(data.van);
+    setNaar(data.naar);
+  }
+  
   useEffect(() => {
     const fetchData = async () => {
+      if (!van || !naar) return;  // Check if van and naar are set
       setLoading(true);
       try {
-        const response = await fetch('http://localhost:5000/api/reisplanner/adviezen');
+        const response = await fetch(`http://localhost:5000/api/reisplanner/adviezen?van=${encodeURIComponent(van)}&naar=${encodeURIComponent(naar)}`);
+        console.log(response);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const result = await response.json();
-        (result);
-      } catch (e) {
-        setError(e.message);
+        setModelData(result);
+        console.log(result)
+      } catch (error) {
+        // @ts-ignore
+        setError(error.message);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
-  
+  }, [van, naar]);
+
+
+
   const displayToast = () => {
     setShowToast(true)
     setTimeout(() => {
@@ -45,10 +58,10 @@ export default function ModelPage({ uploadedFiles }) {
     }
   }, [uploadedFiles])
 
-  const handleSearchInitiated = () => {
-    setShowLottie(false)
-  }
 
+
+  // @ts-ignore
+  // @ts-ignore
   return (
     <div className="min-h-screen bg-gray-100">
       <SearchSection onSearchInitiated={handleSearchInitiated} />

@@ -1,27 +1,40 @@
-using Microsoft.AspNetCore.Mvc;
+// using API.Parsers;
 using API.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace API.Controllers
+[ApiController]
+[Route("api/[controller]")]
+public class ReisplannerController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ReisplannerController : ControllerBase
+    private readonly IReisplannerService _reisplannerService;
+    private readonly ILogger<ReisplannerController> _logger;
+
+    public ReisplannerController(IReisplannerService reisplannerService, ILogger<ReisplannerController> logger)
     {
-        private readonly IReisplannerService _reisplannerService;
+        _reisplannerService = reisplannerService;
+        _logger = logger;
+    }
 
-        public ReisplannerController(IReisplannerService reisplannerService)
+    [HttpGet("adviezen")]
+    public async Task<IActionResult> GetAdviezen([FromQuery] string van, [FromQuery] string naar)
+    {
+        
+
+        _logger.LogInformation("Fetching adviezen for Van: {Van} and Naar: {Naar}", van, naar); 
+        try
         {
-            _reisplannerService = reisplannerService;
+            var model = await _reisplannerService.GetModelAsync(van, naar);
+            _logger.LogInformation("Fetching adviezen for lol: {model} ", model); 
+
+            return Ok(model); 
         }
-
-        [HttpGet("adviezen")]
-        public async Task<IActionResult> GetAdviezenAsync(string filePath)
+        catch (Exception ex)
         {
-            // This endpoint now expects a filePath query parameter, for example:
-            // GET /api/reisplanner/adviezen?filePath=some/path/to/your/graph.txtpb
-            var adviezen = await _reisplannerService.ProcessGraphAndGetAdviceAsync(filePath);
-            return Ok(adviezen);
+            _logger.LogError(ex, "An error occurred while fetching adviezen");
+            return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
         }
     }
 }

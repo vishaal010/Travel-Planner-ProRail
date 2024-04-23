@@ -2,9 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using API.Services;
-using Reisplanner.Adapter;
+using Microsoft.AspNetCore.Http;
 
 namespace API.Controllers
 {
@@ -26,33 +27,43 @@ namespace API.Controllers
         }
 
         [HttpPost("upload")]
-        public async Task<IActionResult> Upload(IFormFile file)
+        public async Task<IActionResult> Upload(List<IFormFile> files)
         {
-            if (file == null || file.Length == 0)
+            if (files == null || files.Count == 0)
             {
-                _logger.LogWarning("Upload attempted with no file.");
-                return BadRequest("No file uploaded.");
+                return BadRequest("No files uploaded.");
             }
 
-            var filePath = Path.Combine(_targetFolder, file.FileName);
-            Directory.CreateDirectory(_targetFolder); // Ensure directory exists
+            List<object> responses = new List<object>();
 
-            try
+            foreach (IFormFile file in files)
             {
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                if (file.Length == 0)
                 {
-                    await file.CopyToAsync(stream);
+                    responses.Add(new { fileName = file.FileName, message = "File is empty." });
+                    continue;
                 }
-                _logger.LogInformation($"File {file.FileName} uploaded successfully to {filePath}");
 
-                var processingResult = await _reisplannerService.ProcessGraphAndGetAdviceAsync(filePath);
-                return Ok(processingResult);
+                var filePath = Path.Combine(_targetFolder, file.FileName);
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+
+                try
+                {
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+                    await _reisplannerService.PrepareGraphDataAsync(filePath);
+                    responses.Add(new { fileName = file.FileName, message = "File uploaded and processed successfully." });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error uploading file {FileName}.", file.FileName);
+                    responses.Add(new { fileName = file.FileName, error = ex.Message });
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error uploading file.");
-                return StatusCode(500, "Internal server error during file upload.");
-            }
+
+            return Ok(responses);
         }
     }
 }

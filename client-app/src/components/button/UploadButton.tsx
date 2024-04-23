@@ -16,38 +16,43 @@ export default function UploadButton({ onFilesUploaded }) {
     };
 
     const handleSubmit = async () => {
+        // Explicitly state that inputList is an array of `File`
         const filesToUpload = inputList.filter(file => file instanceof File) as File[];
+
         if (filesToUpload.length) {
-            // Create a new FormData instance to hold the file data
             const formData = new FormData();
-            // Append the file to the FormData instance, 'file' is the key that the backend will look for
-            formData.append('file', filesToUpload[0], filesToUpload[0].name);
+            // Append each file to 'files' key, now explicitly recognized as File objects
+            filesToUpload.forEach(file => {
+                formData.append('files', file, file.name);
+            });
 
             try {
-                // Make a POST request to the upload endpoint of your backend
                 const response = await fetch('http://localhost:5000/api/graaf/upload', {
                     method: 'POST',
-                    body: formData // Send the file in the request body
-                    // Do not set content-type header for FormData, the browser will set it with the correct boundary
+                    body: formData, // Pass the FormData with multiple files
                 });
 
-                // Handle the response from the backend
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP error! Status: ${response.status}`);
                 }
 
-                const result = await response.json();
-                console.log(result);
-
-                onFilesUploaded(filesToUpload);
-
-                // You might want to navigate to a new route after successful upload
-                navigate('/api/model');
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    const result = await response.json();
+                    console.log("Response from server:", result);
+                    onFilesUploaded(filesToUpload);
+                    navigate('/api/model');
+                } else {
+                    console.log('No JSON returned from server');
+                }
             } catch (error) {
                 console.error('There was a problem with the file upload operation:', error);
             }
+        } else {
+            console.error("No files selected for upload.");
         }
     };
+
 
     const toggleModal = () => {
         const modal = document.getElementById('uploadModal');

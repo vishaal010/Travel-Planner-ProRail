@@ -1,10 +1,8 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 namespace API.Services
 {
     public interface IReisplannerService
     {
-        Task<IEnumerable<string>> ProcessGraphAndGetAdviceAsync(string filePath);
+        Task PrepareGraphDataAsync(string filePath);
+        Task<Model> GetModelAsync(string van, string naar);  // Updated return type
     }
 }
