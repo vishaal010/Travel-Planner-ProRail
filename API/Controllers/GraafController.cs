@@ -26,6 +26,9 @@ namespace API.Controllers
             _targetFolder = Path.Combine(_environment.ContentRootPath, "Graaf");
         }
 
+        // Static list to hold file paths for simplicity
+        public static List<string> UploadedFilePaths = new List<string>();
+
         [HttpPost("upload")]
         public async Task<IActionResult> Upload(List<IFormFile> files)
         {
@@ -53,7 +56,9 @@ namespace API.Controllers
                     {
                         await file.CopyToAsync(stream);
                     }
-                    await _reisplannerService.PrepareGraphDataAsync(filePath);
+                    // Save the path in the static list or a more persistent storage
+                    UploadedFilePaths.Add(filePath);
+                    await _reisplannerService.PrepareGraphDataAsync(filePath); // Optionally prepare data immediately
                     responses.Add(new { fileName = file.FileName, message = "File uploaded and processed successfully." });
                 }
                 catch (Exception ex)
@@ -65,5 +70,42 @@ namespace API.Controllers
 
             return Ok(responses);
         }
+
+
+        [HttpGet("adviezen")]
+        public async Task<IActionResult> GetAdviezen([FromQuery] string van, [FromQuery] string naar)
+        {
+            try
+            {
+                List<Model> models = new List<Model>();
+                foreach (var filePath in UploadedFilePaths)
+                {
+                    var model = await _reisplannerService.GetModelAsync(van, naar, filePath);
+                    models.Add(model);
+                }
+                return Ok(models);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching data");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("station-names")]
+        public async Task<IActionResult> GetStationNames([FromQuery] string filePath)
+        {
+            try
+            {
+                var stationNames = await _reisplannerService.GetStationNamesAsync(filePath);
+                return Ok(stationNames);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get station names.");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
+            }
+        }
+
     }
 }

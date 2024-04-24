@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import ModelCard from './ModelCard'
+// import ModelCard from './ModelCard'
 import {} from '../../types'
 
 const CardContainer = ({ model }) => {
@@ -29,14 +29,14 @@ const CardContainer = ({ model }) => {
         </h2>
       </div>
       <hr className="my-0" />
-      {model.reisAdviezen.map((advies, adviesIndex) => (
-        <ModelCard
-          key={`${model.modelId}-${advies.adviesId}`}
-          reisAdvies={advies}
-          showDetails={showDetailsArray[adviesIndex]}
-          onToggleShowDetails={() => toggleShowDetails(adviesIndex)}
-        />
-      ))}
+      {/*{model.reisAdviezen.map((advies, adviesIndex) => (*/}
+      {/*  <ModelCard*/}
+      {/*    key={`${model.modelId}-${advies.adviesId}`}*/}
+      {/*    reisAdvies={advies}*/}
+      {/*    showDetails={showDetailsArray[adviesIndex]}*/}
+      {/*    onToggleShowDetails={() => toggleShowDetails(adviesIndex)}*/}
+      {/*  />*/}
+      {/*))}*/}
     </div>
   )
 }

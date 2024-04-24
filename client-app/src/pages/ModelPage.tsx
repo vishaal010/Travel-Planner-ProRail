@@ -14,26 +14,23 @@ export default function ModelPage({ uploadedFiles }) {
 
   // @ts-ignore
   const handleSearchInitiated = (data) => {
-    setShowLottie(false)
+    setShowLottie(false);
     setVan(data.van);
     setNaar(data.naar);
-  }
-  
+  };
+
   useEffect(() => {
     const fetchData = async () => {
-      if (!van || !naar) return;  // Check if van and naar are set
+      if (!van || !naar) return;
       setLoading(true);
       try {
-        const response = await fetch(`http://localhost:5000/api/reisplanner/adviezen?van=${encodeURIComponent(van)}&naar=${encodeURIComponent(naar)}`);
-        console.log(response);
+        const response = await fetch(`http://localhost:5000/api/graaf/adviezen?van=${encodeURIComponent(van)}&naar=${encodeURIComponent(naar)}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const result = await response.json();
-        setModelData(result);
-        console.log(result)
+        setModelData(result);  // Ensure this is an array of model data
       } catch (error) {
-        // @ts-ignore
         setError(error.message);
       } finally {
         setLoading(false);
@@ -43,23 +40,21 @@ export default function ModelPage({ uploadedFiles }) {
     fetchData();
   }, [van, naar]);
 
-
-
   const displayToast = () => {
-    setShowToast(true)
-    setTimeout(() => {
-      setShowToast(false)
-    }, 3000)
-  }
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
 
   useEffect(() => {
     if (uploadedFiles.length > 0) {
-      displayToast()
+      displayToast();
     }
-  }, [uploadedFiles])
+  }, [uploadedFiles]);
 
 
 
+  // @ts-ignore
+  // @ts-ignore
   // @ts-ignore
   // @ts-ignore
   return (
@@ -87,7 +82,7 @@ export default function ModelPage({ uploadedFiles }) {
 
       {!showLottie && (
           <div className="flex flex-col md:flex-row justify-around w-full px-4 lg:px-12 mt-7 mb-8 gap-4">
-            {modelData && modelData.map((model, index) => (
+            {modelData && modelData.map((model: any, index: any) => (
                 <CardContainer
                     key={`model-${index}`}
                     model={model}

@@ -1,8 +1,9 @@
-namespace API.Services
+public interface IReisplannerService
 {
-    public interface IReisplannerService
-    {
-        Task PrepareGraphDataAsync(string filePath);
-        Task<Model> GetModelAsync(string van, string naar);  // Updated return type
-    }
+    Task PrepareGraphDataAsync(string filePath);
+    // Update the GetModelAsync method to include the filePath parameter
+    Task<Model> GetModelAsync(string van, string naar, string filePath);
+    
+    Task<List<string>> GetStationNamesAsync(string filePath); // Add this line
+
 }
