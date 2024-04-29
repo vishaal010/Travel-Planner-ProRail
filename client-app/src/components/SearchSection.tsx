@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import {useEffect, useState} from 'react'
 import InputField from './inputfield/InputField.tsx'
 import ButtonWithHover from './button/ButtonWithHover.tsx'
 
@@ -7,6 +7,7 @@ const SearchSection = ({ onSearchInitiated }) => {
   const [inputOne, setInputOne] = useState('')
   const [inputTwo, setInputTwo] = useState('')
 
+  
   const handleSearchClick = () => {
     if (inputOne.trim() && inputTwo.trim()) {
       onSearchInitiated({ van: inputOne, naar: inputTwo });

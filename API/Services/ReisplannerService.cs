@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using API.Services;
+using Domain;
 using Microsoft.Extensions.Caching.Memory;
 using Reisplanner.Adapter;
 
@@ -18,6 +19,7 @@ public class ReisplannerService : IReisplannerService
         _logger = logger;
         _cache = cache;
     }
+    
 
 public async Task<string> GetModelAsync(string van, string naar, string filePath)
     {
@@ -26,13 +28,14 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
             _logger.LogError("Graph data not found in cache for {FilePath}", filePath);
             throw new InvalidOperationException("Graph data not found.");
         }
-
+         _logger.LogInformation("Geef mij station namen {graaf}",graaf.StationVolledigeNamen);
         var reisplanner = new Planner(graaf);
         var model = new Model(); // Initialize your model here
 
         // Extract file name without extension
         var fileName = Path.GetFileNameWithoutExtension(filePath);
         model.ModelNaam = fileName;
+        
 
         var aanvraag = new ReisadviesAanvraag
         {
@@ -64,26 +67,40 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
         var jsonifyModel = JsonSerializer.Serialize(model, indentOptions);
         _logger.LogInformation("Serialized Model: {JsonifyModel}", jsonifyModel);
 
-// Parse the JSON string into a JsonNode
         var node = JsonNode.Parse(jsonifyModel);
         _logger.LogInformation("JsonNode contents: {NodeJson}", node.ToJsonString());
 
-// Assuming "ReisAdviezen" is an array of travel advice objects
-// and each travel advice contains a "Reisadviezen" array with segments
         int reisAdviesCounter = 0;
         foreach (var reisAdviesNode in node["Data"].AsArray())
         {
-            // Generate a new unique ID for ReisadviesId, if needed
             reisAdviesNode["ReisadviesId"] = Guid.NewGuid().ToString();
 
             foreach (var segmentNode in reisAdviesNode["Reisadviezen"].AsArray())
             {
-                // Assign the SegmentId here, for the entire group of segments
                 segmentNode["SegmentId"] = $"SegmentId_{reisAdviesCounter++}";
-                // You can remove the inner loop that was assigning SegmentId to individual segments,
-                // unless you also want them to have their own unique SegmentId.
+
+                foreach (var stapNode in segmentNode["Segmenten"].AsArray())
+                {
+                    foreach (var step in stapNode["Stappen"].AsArray())
+                    {
+                        var station = (string)step["Station"]; 
+                        _logger.LogInformation("Original Station Name: {OriginalStationName}", station);
+
+                        if (graaf.StationVolledigeNamen.ContainsKey(station))
+                        {
+                            var updatedStationName = graaf.StationVolledigeNamen[station];
+                            step["Station"] = updatedStationName; 
+                            _logger.LogInformation("Updated Station Name: {UpdatedStationName}", updatedStationName);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Station name not found in dictionary: {StationName}", station);
+                        }
+                    }
+                }
             }
         }
+
         _logger.LogInformation("Modified Reisadviezen in JSON with unique SegmentIds.");
 
         _logger.LogInformation("Modified Reisadviezen in JSON with SegmentIds.");
@@ -96,24 +113,36 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
     }
     
 
-    public async Task<List<string>> GetStationNamesAsync(string filePath)
+    public async Task<List<StationName>> GetStationNamesAsync(string filePath)
     {
+        _logger.LogInformation("Invoked GetStationNamesAsync with filePath: {FilePath}", filePath);
+        List<StationName> stationNamesWithKeys;
         if (!_cache.TryGetValue(filePath, out ReisplannerGraaf graaf))
         {
-            // Load the graph if it's not in the cache
             graaf = await Task.Run(() => Utils.LeesGraaf(filePath));
             _cache.Set(filePath, graaf, TimeSpan.FromHours(1));
-            _logger.LogInformation("Graph data loaded and cached successfully for {FilePath}", filePath);
+            _logger.LogInformation("Graph data loaded and cached for {FilePath}", filePath);
         }
         else
         {
             _logger.LogInformation("Graph data retrieved from cache for {FilePath}", filePath);
         }
 
-        // Convert the dictionary values to a list and return
-        return graaf.StationVolledigeNamen.Values.ToList();
-    }
+        if (graaf != null && graaf.StationVolledigeNamen != null)
+        {
+            stationNamesWithKeys = graaf.StationVolledigeNamen
+                .Select(kv => new StationName { Key = kv.Key, Value = kv.Value })
+                .ToList();
+            _logger.LogInformation("Retrieved station names with keys: {StationNamesWithKeys}", stationNamesWithKeys);
+        }
+        else
+        {
+            stationNamesWithKeys = new List<StationName>();
+            _logger.LogWarning("No station names found or graaf object is null for {FilePath}", filePath);
+        }
 
+        return stationNamesWithKeys;
+    }
 
 
     public async Task PrepareGraphDataAsync(string filePath)
@@ -122,13 +151,10 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
         {
             _logger.LogInformation("Starting to load graph data from file: {FilePath}", filePath);
         
-            // Check if the graph is already in cache
             if (!_cache.TryGetValue(filePath, out ReisplannerGraaf graaf))
             {
-                // Load the graph as it's not in the cache
                 graaf = await Task.Run(() => Utils.LeesGraaf(filePath));
                 _logger.LogInformation("test {test}", graaf.StationVolledigeNamen );
-                // Set the graph in the cache with a 1-hour expiration
                 _cache.Set(filePath, graaf, TimeSpan.FromHours(1));
                 _logger.LogInformation("Graph data loaded and cached successfully for {FilePath}", filePath);
             }

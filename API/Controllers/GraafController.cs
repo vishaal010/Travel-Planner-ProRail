@@ -5,6 +5,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using API.Services;
+using Domain;
 using Microsoft.AspNetCore.Http;
 
 namespace API.Controllers
@@ -74,6 +75,7 @@ namespace API.Controllers
         [HttpGet("adviezen")]
         public async Task<IActionResult> GetAdviezen([FromQuery] string van, [FromQuery] string naar)
         {
+            
             try
             {
                 List<string> jsonModels = new List<string>(); // Change to a list of strings
@@ -95,12 +97,20 @@ namespace API.Controllers
 
 
         [HttpGet("station-names")]
-        public async Task<IActionResult> GetStationNames([FromQuery] string filePath)
+        public async Task<IActionResult> GetStationNames()
         {
             try
             {
-                var stationNames = await _reisplannerService.GetStationNamesAsync(filePath);
-                return Ok(stationNames);
+                Dictionary<string, List<StationName>> allStationNames = new Dictionary<string, List<StationName>>();
+
+                foreach (var filePath in UploadedFilePaths)
+                {
+                    var stationNames = await _reisplannerService.GetStationNamesAsync(filePath);
+                    allStationNames.Add(filePath, stationNames);
+                    _logger.LogInformation("Successfully retrieved station names for filePath: {FilePath}", filePath);
+                }
+
+                return Ok(allStationNames);
             }
             catch (Exception ex)
             {
@@ -108,6 +118,9 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
+
+
+
 
     }
 }
