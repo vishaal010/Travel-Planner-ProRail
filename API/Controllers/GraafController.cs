@@ -71,19 +71,19 @@ namespace API.Controllers
             return Ok(responses);
         }
 
-
         [HttpGet("adviezen")]
         public async Task<IActionResult> GetAdviezen([FromQuery] string van, [FromQuery] string naar)
         {
             try
             {
-                List<Model> models = new List<Model>();
+                List<string> jsonModels = new List<string>(); // Change to a list of strings
                 foreach (var filePath in UploadedFilePaths)
                 {
-                    var model = await _reisplannerService.GetModelAsync(van, naar, filePath);
-                    models.Add(model);
+                    string json = await _reisplannerService.GetModelAsync(van, naar, filePath);
+                    jsonModels.Add(json);
                 }
-                return Ok(models);
+                // This will return an array of JSON strings representing each model
+                return Ok(jsonModels);
             }
             catch (Exception ex)
             {
@@ -91,6 +91,8 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
+
+
 
         [HttpGet("station-names")]
         public async Task<IActionResult> GetStationNames([FromQuery] string filePath)

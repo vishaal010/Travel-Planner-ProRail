@@ -28,8 +28,17 @@ export default function ModelPage({ uploadedFiles }) {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
+        
         const result = await response.json();
-        setModelData(result);  // Ensure this is an array of model data
+        console.log(result)
+
+        // Assuming result.data is the property that contains the JSON string
+        if (result.data && typeof result.data === 'string') {
+          const parsedData = JSON.parse(result.data);
+          setModelData(parsedData); // Now, parsedData is an array of models
+        } else {
+          setModelData(result);
+        } // Ensure this is an array of model data
       } catch (error) {
         setError(error.message);
       } finally {
@@ -53,10 +62,7 @@ export default function ModelPage({ uploadedFiles }) {
 
 
 
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
+
   return (
     <div className="min-h-screen bg-gray-100">
       <SearchSection onSearchInitiated={handleSearchInitiated} />
@@ -82,11 +88,10 @@ export default function ModelPage({ uploadedFiles }) {
 
       {!showLottie && (
           <div className="flex flex-col md:flex-row justify-around w-full px-4 lg:px-12 mt-7 mb-8 gap-4">
-            {modelData && modelData.map((model: any, index: any) => (
+            {modelData && modelData.map((model, index) => (
                 <CardContainer
-                    key={`model-${index}`}
+                    key={`model-${model.ModelId}`} // It's better to use ModelId if available
                     model={model}
-                    className="mb-4 md:mb-0 md:mx-2"
                 />
             ))}
           </div>

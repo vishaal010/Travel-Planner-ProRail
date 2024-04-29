@@ -2,31 +2,29 @@ import React, { useState, useRef, useEffect, createRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 type Station = {
-  stationNaam: string
-  spoor: string
+  Station: string
+  Spoor: string
   details?: string
-  reisTijd?: string // Assuming 'travelTime' is 'reisTijd' in Dutch
+  Tijd?: string // Assuming 'travelTime' is 'reisTijd' in Dutch
   hasIntermediateStations?: boolean // Assuming this is the translation for 'hasIntermediateStations'
   stapType: string // Assuming 'stepType' translates to 'stapType'
   tijd: string
 }
 
 type StationDetailsProps = {
-  vertrekTijd: string // Assuming 'departureTime' translates to 'vertrekTijd'
-  aankomstTijd: string // Assuming 'arrivalTime' translates to 'aankomstTijd'
+  vertrekTijd: string
+  aankomstTijd: string
   stations: Station[]
-  showIntermediateStations: boolean // Assuming this is the translation for 'showIntermediateStations'
-  toggleIntermediateStations: (segmentId: number) => void // Assuming this is the translation for 'toggleIntermediateStations'
+  showIntermediateStations: boolean
+  toggleIntermediateStations: (segmentId: number) => void
   segmentId: number
+  trainType: string
+  destination: string
+  departure: string
 }
 
-const StationDetails: React.FC<StationDetailsProps> = ({
-  departureTime,
-  arrivalTime,
-  stations,
-  showIntermediateStations,
-  toggleIntermediateStations,
-  segmentId,
+
+const StationDetails: React.FC<StationDetailsProps> = ({stations, showIntermediateStations, toggleIntermediateStations, segmentId, trainType, destination, departure,
 }) => {
   const stationRefs = useRef(stations.map(() => createRef<HTMLLIElement>()))
   const [stationTimesTop, setStationTimesTop] = useState<number[]>([])
@@ -69,7 +67,7 @@ const StationDetails: React.FC<StationDetailsProps> = ({
                   left: '0',
                 }}
               >
-                {station.tijd}
+                {station.Tijd}
               </span>
               {/* Only render the text for all but the last station */}
               {index < array.length - 1 && (
@@ -82,7 +80,7 @@ const StationDetails: React.FC<StationDetailsProps> = ({
                     transform: 'translateY(50%)',
                   }}
                 >
-                  10+
+                  {/*10+*/}
                 </span>
               )}
             </React.Fragment>
@@ -103,18 +101,18 @@ const StationDetails: React.FC<StationDetailsProps> = ({
           <div className="flex justify-between items-center pt-1">
             <div>
               <p className="text-base font-semibold text-gray-900">
-                {station.stationNaam}
+                {station.Station}
               </p>
               {/* Change display based on index */}
               <p className="text-xs text-gray-500">
                 {index === 0
-                  ? 'Departure'
+                  ? 'Vertrek'
                   : index === displayedStations.length - 1
-                  ? 'Arrival'
-                  : 'Intermediate'}
+                  ? 'Aankomst'
+                  : 'Vertrek'}
               </p>
             </div>
-            <div className="text-xs">Spoor {station.spoor}</div>
+            <div className="text-xs">Spoor {station.Spoor}</div>
           </div>
           {index === 0 && (
             <>
@@ -123,13 +121,13 @@ const StationDetails: React.FC<StationDetailsProps> = ({
                 {/* Train info */}
                 <div>
                   <p className="text-xs font-roboto-light text-gray-500">
-                    NS Sprinter
+                    {trainType}
                   </p>
                   <p className="text-xs font-roboto-light text-gray-500">
-                    Richting Dordrecht
+                    Richting {destination}
                   </p>
                   <p className="text-xs font-roboto-light text-gray-500">
-                    Vertrek
+                    {departure}
                   </p>
                 </div>
                 <div

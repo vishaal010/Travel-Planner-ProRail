@@ -18,7 +18,84 @@ public class ReisplannerService : IReisplannerService
         _logger = logger;
         _cache = cache;
     }
+
+public async Task<string> GetModelAsync(string van, string naar, string filePath)
+    {
+         if (!_cache.TryGetValue(filePath, out ReisplannerGraaf graaf))
+        {
+            _logger.LogError("Graph data not found in cache for {FilePath}", filePath);
+            throw new InvalidOperationException("Graph data not found.");
+        }
+
+        var reisplanner = new Planner(graaf);
+        var model = new Model(); // Initialize your model here
+
+        // Extract file name without extension
+        var fileName = Path.GetFileNameWithoutExtension(filePath);
+        model.ModelNaam = fileName;
+
+        var aanvraag = new ReisadviesAanvraag
+        {
+            Van = van,
+            Naar = naar,
+            MaxReisadviezen = 1,
+            Bandbreedte = 10
+        };
+
+        _logger.LogInformation($"ReisadviesAanvraag created for Van: {van} to Naar: {naar}");
+
+        var instellingen = new Instellingen
+        {
+            LogAanvraagInfo = true,
+            LogPlanningStatistieken = true,
+            LogGraafInfo = true,
+            LogTussenStops = false,
+            LogResultaten = true,
+        };
+
+        var adviezen = reisplanner.GeefReisAdviezen(aanvraag, instellingen);
+        _logger.LogInformation("test, {test}", adviezen);
+        model.Data.AddRange(adviezen);
+
+        // Specify JsonSerializerOptions with indentation enabled
+        var indentOptions = new JsonSerializerOptions() { WriteIndented = true };
+
+        // Serialize your model object to JSON with indentation
+        var jsonifyModel = JsonSerializer.Serialize(model, indentOptions);
+        _logger.LogInformation("Serialized Model: {JsonifyModel}", jsonifyModel);
+
+// Parse the JSON string into a JsonNode
+        var node = JsonNode.Parse(jsonifyModel);
+        _logger.LogInformation("JsonNode contents: {NodeJson}", node.ToJsonString());
+
+// Assuming "ReisAdviezen" is an array of travel advice objects
+// and each travel advice contains a "Reisadviezen" array with segments
+        int reisAdviesCounter = 0;
+        foreach (var reisAdviesNode in node["Data"].AsArray())
+        {
+            // Generate a new unique ID for ReisadviesId, if needed
+            reisAdviesNode["ReisadviesId"] = Guid.NewGuid().ToString();
+
+            foreach (var segmentNode in reisAdviesNode["Reisadviezen"].AsArray())
+            {
+                // Assign the SegmentId here, for the entire group of segments
+                segmentNode["SegmentId"] = $"SegmentId_{reisAdviesCounter++}";
+                // You can remove the inner loop that was assigning SegmentId to individual segments,
+                // unless you also want them to have their own unique SegmentId.
+            }
+        }
+        _logger.LogInformation("Modified Reisadviezen in JSON with unique SegmentIds.");
+
+        _logger.LogInformation("Modified Reisadviezen in JSON with SegmentIds.");
+
+// Convert the modified JsonNode back to a JSON string
+        var modifiedJson = node.ToJsonString();
+        _logger.LogInformation("Serialized Modified Model: {ModifiedJson}", modifiedJson);
+
+        return modifiedJson;
+    }
     
+
     public async Task<List<string>> GetStationNamesAsync(string filePath)
     {
         if (!_cache.TryGetValue(filePath, out ReisplannerGraaf graaf))
@@ -66,71 +143,5 @@ public class ReisplannerService : IReisplannerService
             throw;  
         }
     }
-
-
-    public async Task<Model> GetModelAsync(string van, string naar, string filePath)
-    {
-        if (!_cache.TryGetValue(filePath, out ReisplannerGraaf graaf))
-        {
-            _logger.LogError("Graph data not found in cache for {FilePath}", filePath);
-            throw new InvalidOperationException("Graph data not found.");
-        }
-
-        var reisplanner = new Planner(graaf);
-        var model = new Model(); // Initialize your model here
-
-        // Extract file name without extension
-        var fileName = Path.GetFileNameWithoutExtension(filePath);
-        model.ModelNaam = fileName;
-
-        var aanvraag = new ReisadviesAanvraag
-        {
-            Van = van,
-            Naar = naar,
-            MaxReisadviezen = 1,
-            Bandbreedte = 10
-        };
-
-        _logger.LogInformation($"ReisadviesAanvraag created for Van: {van} to Naar: {naar}");
-
-        var instellingen = new Instellingen
-        {
-            LogAanvraagInfo = true,
-            LogPlanningStatistieken = true,
-            LogGraafInfo = true,
-            LogTussenStops = false,
-            LogResultaten = true,
-        };
-
-        var adviezen = reisplanner.GeefReisAdviezen(aanvraag, instellingen);
-        model.ReisAdviezen.AddRange(adviezen);
-
-        // Specify JsonSerializerOptions with indentation enabled
-        var indentOptions = new JsonSerializerOptions() { WriteIndented = true };
-
-        // Serialize your model object to JSON with indentation
-        var jsonifyModel = JsonSerializer.Serialize(model, indentOptions);
-        _logger.LogInformation("Serialized Model: {JsonifyModel}", jsonifyModel);
-
-        // Parse the JSON string into a JsonNode
-        var node = JsonNode.Parse(jsonifyModel);
-        _logger.LogInformation("JsonNode contents: {NodeJson}", node.ToJsonString());
-
-        // Modify properties in the JsonNode as needed
-        // Ensure the keys match the case used in your JSON structure
-        node["ReisAdviezen"][0]["ReisadviesId"] = "ReisadviesId123";
-        _logger.LogInformation("Modified ReisadviesId in JSON.");
-
-        node["ReisAdviezen"][0]["Reisadviezen"][0]["Segmenten"][0]["SegmentId"] = "SegmentId123";
-        _logger.LogInformation("Modified SegmentId in JSON.");
-
-        // Convert the modified JsonNode back to a JSON string
-        // Convert the modified JsonNode back to a JSON string
-        var modifiedJson = node.ToJsonString();
-        _logger.LogInformation("Serialized Modified Model: {ModifiedJson}", modifiedJson);
-
-        return modifiedJson;
-    }
-
-
+    
 }
