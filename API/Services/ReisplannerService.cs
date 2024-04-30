@@ -41,8 +41,8 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
         {
             Van = van,
             Naar = naar,
-            MaxReisadviezen = 1,
-            Bandbreedte = 10
+            MaxReisadviezen = 3,
+            Bandbreedte = 50
         };
 
         _logger.LogInformation($"ReisadviesAanvraag created for Van: {van} to Naar: {naar}");
@@ -57,7 +57,6 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
         };
 
         var adviezen = reisplanner.GeefReisAdviezen(aanvraag, instellingen);
-        _logger.LogInformation("test, {test}", adviezen);
         model.Data.AddRange(adviezen);
 
         // Specify JsonSerializerOptions with indentation enabled
@@ -71,6 +70,8 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
         _logger.LogInformation("JsonNode contents: {NodeJson}", node.ToJsonString());
 
         int reisAdviesCounter = 0;
+        int stapCounter = 0;  // Initialize a counter for each Stappen array
+
         foreach (var reisAdviesNode in node["Data"].AsArray())
         {
             reisAdviesNode["ReisadviesId"] = Guid.NewGuid().ToString();
@@ -81,15 +82,18 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
 
                 foreach (var stapNode in segmentNode["Segmenten"].AsArray())
                 {
+                    // Assign a unique StappenId to each Stappen array
+                    stapNode["StappenId"] = $"StappenId_{stapCounter++}";
+
                     foreach (var step in stapNode["Stappen"].AsArray())
                     {
-                        var station = (string)step["Station"]; 
+                        var station = (string)step["Station"];
                         _logger.LogInformation("Original Station Name: {OriginalStationName}", station);
 
                         if (graaf.StationVolledigeNamen.ContainsKey(station))
                         {
                             var updatedStationName = graaf.StationVolledigeNamen[station];
-                            step["Station"] = updatedStationName; 
+                            step["Station"] = updatedStationName;
                             _logger.LogInformation("Updated Station Name: {UpdatedStationName}", updatedStationName);
                         }
                         else
@@ -100,6 +104,7 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
                 }
             }
         }
+
 
         _logger.LogInformation("Modified Reisadviezen in JSON with unique SegmentIds.");
 

@@ -20,29 +20,30 @@ export default function ModelPage({ uploadedFiles }) {
   };
 
   useEffect(() => {
+    if (uploadedFiles.length > 0) {
+      displayToast();
+    }
+  }, [uploadedFiles]);
+
+  useEffect(() => {
     const fetchData = async () => {
       if (!van || !naar) return;
-      setLoading(true);
+      setLoading(true); // Start loading
       try {
         const response = await fetch(`http://localhost:5000/api/graaf/adviezen?van=${encodeURIComponent(van)}&naar=${encodeURIComponent(naar)}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
         const result = await response.json();
-        console.log(result)
-
-        // Assuming result.data is the property that contains the JSON string
         if (result.data && typeof result.data === 'string') {
-          const parsedData = JSON.parse(result.data);
-          setModelData(parsedData); // Now, parsedData is an array of models
+          setModelData(JSON.parse(result.data));
         } else {
           setModelData(result);
-        } // Ensure this is an array of model data
+        }
       } catch (error) {
         setError(error.message);
       } finally {
-        setLoading(false);
+        setLoading(false); // End loading
       }
     };
 
@@ -54,17 +55,24 @@ export default function ModelPage({ uploadedFiles }) {
     setTimeout(() => setShowToast(false), 3000);
   };
 
-  useEffect(() => {
-    if (uploadedFiles.length > 0) {
-      displayToast();
-    }
-  }, [uploadedFiles]);
-
+  if (loading) {
+    return (
+        <div className="mb-2">
+          <SearchSection onSearchInitiated={handleSearchInitiated} />
+          <div className="flex justify-center items-start pt-20 min-h-screen">
+            <div className="flex items-center space-x-2">  {/* Aligns items horizontally and adds space between them */}
+              <span className="loading loading-spinner loading-lg"></span>
+              <p className="font-roboto text-lg">Loading...</p>  
+            </div>
+          </div>
+        </div>
+    );
+  }
 
 
 
   return (
-    <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-gray-100">
       <SearchSection onSearchInitiated={handleSearchInitiated} />
 
       {showLottie && (

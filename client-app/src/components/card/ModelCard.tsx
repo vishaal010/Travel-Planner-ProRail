@@ -33,7 +33,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
     const initialVisibility = reisAdvies.Reisadviezen.reduce((acc, reisadviesItem) => {
       if (Array.isArray(reisadviesItem.Segmenten)) {
         reisadviesItem.Segmenten.forEach(segment => {
-          acc[segment.SegmentId] = false;
+          acc[segment.StappenId] = false;
         });
       }
       return acc;
@@ -51,28 +51,13 @@ const ModelCard: React.FC<ModelCardProps> = ({
   console.log(maxSegmentDuur); // This will print the maximum segment duration to the console.
 
   
-  const test = reisAdvies.Reisadviezen.flatMap(reisadvies =>
-      reisadvies.Segmenten.flatMap(segment =>
-          segment.Stappen.map(stap => {
-            // Now you have access to each 'stap' within 'Stappen'
-            // Do something with 'stap', for example, logging the 'Station' value
-            console.log(stap.Station);
-          })
-      )
-  )
-
-
-  const variants = {
-    open: { opacity: 1, height: 'auto' },
-    collapsed: { opacity: 0, height: 0 },
-  };
   
 
   // Function to toggle the visibility of intermediate stations
-  const toggleIntermediateVisibility = (segmentId) => {
+  const toggleIntermediateVisibility = (StappenId) => {
     setIntermediateVisibility((prevState) => ({
       ...prevState,
-      [segmentId]: !prevState[segmentId],
+      [StappenId]: !prevState[StappenId],
     }));
   };
   //
@@ -91,17 +76,14 @@ const ModelCard: React.FC<ModelCardProps> = ({
     }, []);
   };
 
-// Assuming reisAdvies.Reisadviezen exists and has at least one item
   if (reisAdvies.Reisadviezen.length > 0) {
-    const firstReisadvies = reisAdvies.Reisadviezen[0]; // Get only the first Reisadvies
+    const firstReisadvies = reisAdvies.Reisadviezen[0]; 
     firstReisadvies.Segmenten.forEach(segment => {
       const processedStations = processStations(segment.Stappen);
-      console.log(processedStations); // Log the processed stations for each segment in the first Reisadvies
-      // Update the Stappen of each segment with the processed stations:
+      console.log(processedStations); 
       segment.Stappen = processedStations;
     });
 
-    // Optionally, to see the updated structure of the first Reisadvies:
   }
 
 
@@ -121,6 +103,15 @@ const ModelCard: React.FC<ModelCardProps> = ({
       }
     }
   }
+  //
+  // if (isLoading) { // Skeleton loading when fetching data
+  //   return (
+  //       <div className="mb-2">
+  //         <div className="skeleton h-32 w-full"></div>
+  //       </div>
+  //   );
+  // }
+
 
   return (
     <div className="shadow-lg rounded-lg overflow-hidden border border-black bg-white mb-2">
@@ -258,7 +249,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
                   {reisAdvies.Reisadviezen[0].Segmenten.map((segment, index) => {
                     const isLastSegment = index === reisAdvies.Reisadviezen[0].Segmenten.length - 1;
                     const uniqueStations = processStations(segment.Stappen);
-
+                    console.log("tijd"+ segment.StappenId)
                     return (
                         <React.Fragment key={segment.SegmentId}>
                           {index !== 0 && (
@@ -290,9 +281,9 @@ const ModelCard: React.FC<ModelCardProps> = ({
                               departureTime={segment.Stappen[0].Tijd}
                               arrivalTime={segment.Stappen[segment.Stappen.length - 1].Tijd}
                               stations={uniqueStations}
-                              showIntermediateStations={intermediateVisibility[segment.SegmentId]}
+                              showIntermediateStations={intermediateVisibility[segment.StappenId]}
                               toggleIntermediateStations={() =>
-                                  toggleIntermediateVisibility(segment.segmentId)
+                                  toggleIntermediateVisibility(segment.StappenId)
                               }   
                               segmentId={segment.SegmentId}
                               trainType={segment.TreinType}

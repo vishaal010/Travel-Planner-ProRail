@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ModelCard from './ModelCard';
 
-const CardContainer = ({ model }) => {
+const CardContainer = ({ model, isLoading }) => {
   const [modelData, setModelData] = useState(null);
   const [showDetailsArray, setShowDetailsArray] = useState([]);
 
@@ -25,7 +25,7 @@ const CardContainer = ({ model }) => {
     } catch (error) {
       console.error("Error parsing model JSON:", error);
     }
-  }, []); // Effect runs every time 'model' changes
+  }, [model]); // Effect runs every time 'model' changes
 
   const toggleShowDetails = (adviesIndex) => {
     console.log('Before toggle:', showDetailsArray);
@@ -36,6 +36,7 @@ const CardContainer = ({ model }) => {
 
     console.log('After toggle:', updatedShowDetailsArray);
 
+    // @ts-ignore
     setShowDetailsArray(updatedShowDetailsArray);
   };
 
@@ -63,6 +64,7 @@ const CardContainer = ({ model }) => {
                     reisAdvies={advies}
                     showDetails={showDetailsArray[index]}
                     onToggleShowDetails={() => toggleShowDetails(index)}
+                    isLoading={isLoading}
                 />
             ))
         }

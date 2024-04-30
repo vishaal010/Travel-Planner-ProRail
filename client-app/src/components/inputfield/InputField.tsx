@@ -21,6 +21,7 @@ const InputField = ({ inputOne, setInputOne, inputTwo, setInputTwo }) => {
                 borderColor: state.isFocused ? '#aaa' : '#ccc',
             },
             padding: '2px',
+
         }),
         valueContainer: (provided, state) => ({
             ...provided,
@@ -37,7 +38,12 @@ const InputField = ({ inputOne, setInputOne, inputTwo, setInputTwo }) => {
             ...provided,
             height: '48px',
         }),
+        menu: (provided, state) => ({
+            ...provided,
+            zIndex: 20,
+        }),
     };
+
 
     useEffect(() => {
         // Fetch station names from your backend or a local source
