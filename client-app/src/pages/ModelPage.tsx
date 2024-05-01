@@ -52,7 +52,7 @@ export default function ModelPage({ uploadedFiles }) {
 
   const displayToast = () => {
     setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+    setTimeout(() => setShowToast(false), 6000);
   };
 
   if (loading) {
