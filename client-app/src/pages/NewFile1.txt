@@ -1,0 +1,33 @@
+const [data, setData] = useState([]);
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState(null);
+
+useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch('http://localhost:5000/api/reisplanner/adviezen');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        console.log(result)
+        setData(result);
+      } catch (e) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+  
+   <div>
+          <h1>Reisadviezen</h1>
+          <ul>
+            {data.map((advies, index) => (
+                <li key={index}>{advies}</li>
+            ))}
+          </ul>
+        </div>

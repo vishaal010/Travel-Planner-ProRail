@@ -1,64 +1,126 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using API.Services;
+using Domain;
+using Microsoft.AspNetCore.Http;
 
-
-
-namespace API.Controllers;
-
-[Route("api/[controller]")]
-
-public class GraafController : ControllerBase
+namespace API.Controllers
 {
-    private readonly ILogger<GraafController> _logger;
-    private readonly IWebHostEnvironment _environment;
-    private readonly string _targetFolder;
-
-    public GraafController(IWebHostEnvironment environment, ILogger<GraafController> logger)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class GraafController : ControllerBase
     {
-        _environment = environment;
-        _logger = logger;
-        _targetFolder = Path.Combine(_environment.ContentRootPath, "Graaf");
-    }
+        private readonly ILogger<GraafController> _logger;
+        private readonly IWebHostEnvironment _environment;
+        private readonly IReisplannerService _reisplannerService;
+        private readonly string _targetFolder;
 
-    [HttpPost("upload")]
-    public async Task<IActionResult> Upload(IFormFile file)
-    {
-        if (file == null || file.Length == 0)
-            return BadRequest("No file uploaded.");
-
-        var filePath = Path.Combine(_targetFolder, file.FileName);
-
-        // Ensure the directory exists
-        Directory.CreateDirectory(_targetFolder);
-
-        try
+        public GraafController(IWebHostEnvironment environment, ILogger<GraafController> logger, IReisplannerService reisplannerService)
         {
-            using (var stream = System.IO.File.Create(filePath))
+            _environment = environment;
+            _logger = logger;
+            _reisplannerService = reisplannerService;
+            _targetFolder = Path.Combine(_environment.ContentRootPath, "Graaf");
+        }
+
+        // Static list to hold file paths for simplicity
+        public static List<string> UploadedFilePaths = new List<string>();
+
+        [HttpPost("upload")]
+        public async Task<IActionResult> Upload(List<IFormFile> files)
+        {
+            if (files == null || files.Count == 0)
             {
-                await file.CopyToAsync(stream);
-                // After copying the file to the stream
-                _logger.LogInformation($"File {file.FileName} uploaded successfully to {filePath}");
+                return BadRequest("No files uploaded.");
+            }
 
-                // Confirm the file exists
-                if (System.IO.File.Exists(filePath))
+            List<object> responses = new List<object>();
+
+            foreach (IFormFile file in files)
+            {
+                if (file.Length == 0)
                 {
-                    _logger.LogInformation($"Confirmed the file exists at {filePath}");
-                }
-                else
-                {
-                    _logger.LogError($"The file was not found at {filePath}");
+                    responses.Add(new { fileName = file.FileName, message = "File is empty." });
+                    continue;
                 }
 
+                var filePath = Path.Combine(_targetFolder, file.FileName);
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+
+                try
+                {
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+                    // Save the path in the static list or a more persistent storage
+                    UploadedFilePaths.Add(filePath);
+                    await _reisplannerService.PrepareGraphDataAsync(filePath); // Optionally prepare data immediately
+                    responses.Add(new { fileName = file.FileName, message = "File uploaded and processed successfully." });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error uploading file {FileName}.", file.FileName);
+                    responses.Add(new { fileName = file.FileName, error = ex.Message });
+                }
+            }
+
+            return Ok(responses);
+        }
+
+        [HttpGet("adviezen")]
+        public async Task<IActionResult> GetAdviezen([FromQuery] string van, [FromQuery] string naar)
+        {
+            
+            try
+            {
+                List<string> jsonModels = new List<string>(); // Change to a list of strings
+                foreach (var filePath in UploadedFilePaths)
+                {
+                    string json = await _reisplannerService.GetModelAsync(van, naar, filePath);
+                    jsonModels.Add(json);
+                }
+                // This will return an array of JSON strings representing each model
+                return Ok(jsonModels);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching data");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
-        catch (Exception ex)
+
+
+
+        [HttpGet("station-names")]
+        public async Task<IActionResult> GetStationNames()
         {
-            // Log the exception
-            // You might want to return a different type of ActionResult to indicate the error.
-            _logger.LogError(ex, "Error uploading file.");
-            return StatusCode(500, "Internal server error");
+            try
+            {
+                Dictionary<string, List<StationName>> allStationNames = new Dictionary<string, List<StationName>>();
+
+                foreach (var filePath in UploadedFilePaths)
+                {
+                    var stationNames = await _reisplannerService.GetStationNamesAsync(filePath);
+                    allStationNames.Add(filePath, stationNames);
+                    _logger.LogInformation("Successfully retrieved station names for filePath: {FilePath}", filePath);
+                }
+
+                return Ok(allStationNames);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get station names.");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
+            }
         }
 
-        return Ok(new { filePath });
+
+
+
     }
 }

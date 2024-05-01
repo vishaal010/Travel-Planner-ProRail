@@ -15,13 +15,45 @@ export default function UploadButton({ onFilesUploaded }) {
         setInputList(newInputList);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
+        // Explicitly state that inputList is an array of `File`
         const filesToUpload = inputList.filter(file => file instanceof File) as File[];
+
         if (filesToUpload.length) {
-            onFilesUploaded(filesToUpload);
-            navigate('/api/model'); // Navigate after files are set to be uploaded
+            const formData = new FormData();
+            // Append each file to 'files' key, now explicitly recognized as File objects
+            filesToUpload.forEach(file => {
+                formData.append('files', file, file.name);
+            });
+
+            try {
+                const response = await fetch('http://localhost:5000/api/graaf/upload', {
+                    method: 'POST',
+                    body: formData, // Pass the FormData with multiple files
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    const result = await response.json();
+                    console.log("Response from server:", result);
+                    onFilesUploaded(filesToUpload);
+                    navigate('/api/model');
+                } else {
+                    console.log('No JSON returned from server');
+                }
+            } catch (error) {
+                console.error('There was a problem with the file upload operation:', error);
+            }
+        } else {
+            console.error("No files selected for upload.");
         }
     };
+
+
     const toggleModal = () => {
         const modal = document.getElementById('uploadModal');
         if (modal instanceof HTMLDialogElement) {
@@ -47,7 +79,7 @@ export default function UploadButton({ onFilesUploaded }) {
                             <h2 className='font-roboto mb-4'>Bestand {index + 1}</h2>
                             <input
                                 type="file"
-                                accept=".txt"
+                                accept=".txtpb"
                                 onChange={(e) => handleFileChange(e, index)}
                                 className="file-input file-input-ghost file-input-primary w-full max-w-xs mb-2"
                             />

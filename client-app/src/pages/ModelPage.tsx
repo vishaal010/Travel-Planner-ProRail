@@ -6,46 +6,73 @@ import { Player } from '@lottiefiles/react-lottie-player'
 export default function ModelPage({ uploadedFiles }) {
   const [showToast, setShowToast] = useState(false)
   const [showLottie, setShowLottie] = useState(true)
-  const [modelData, setModelData] = useState(null) // State to store the fetched data
+  const [modelData, setModelData] = useState(null)
+  const [van, setVan] = useState('');
+  const [naar, setNaar] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Fetch the model data from the backend
-  const fetchModelData = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/model')
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      const data = await response.json()
-      console.log(data)
-      setModelData(data)
-    } catch (error) {
-      console.error('Could not fetch the model data:', error)
-    }
-  }
-
-  useEffect(() => {
-    fetchModelData()
-  }, []) 
-
-  const displayToast = () => {
-    setShowToast(true)
-    setTimeout(() => {
-      setShowToast(false)
-    }, 3000)
-  }
+  // @ts-ignore
+  const handleSearchInitiated = (data) => {
+    setShowLottie(false);
+    setVan(data.van);
+    setNaar(data.naar);
+  };
 
   useEffect(() => {
     if (uploadedFiles.length > 0) {
-      displayToast()
+      displayToast();
     }
-  }, [uploadedFiles])
+  }, [uploadedFiles]);
 
-  const handleSearchInitiated = () => {
-    setShowLottie(false)
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!van || !naar) return;
+      setLoading(true); // Start loading
+      try {
+        const response = await fetch(`http://localhost:5000/api/graaf/adviezen?van=${encodeURIComponent(van)}&naar=${encodeURIComponent(naar)}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        if (result.data && typeof result.data === 'string') {
+          setModelData(JSON.parse(result.data));
+        } else {
+          setModelData(result);
+        }
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false); // End loading
+      }
+    };
+
+    fetchData();
+  }, [van, naar]);
+
+  const displayToast = () => {
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 6000);
+  };
+
+  if (loading) {
+    return (
+        <div className="mb-2">
+          <SearchSection onSearchInitiated={handleSearchInitiated} />
+          <div className="flex justify-center items-start pt-20 min-h-screen">
+            <div className="flex items-center space-x-2">  {/* Aligns items horizontally and adds space between them */}
+              <span className="loading loading-spinner loading-lg"></span>
+              <p className="font-roboto text-lg">Loading...</p>  
+            </div>
+          </div>
+        </div>
+    );
   }
 
+
+
   return (
-    <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-gray-100">
       <SearchSection onSearchInitiated={handleSearchInitiated} />
 
       {showLottie && (
@@ -71,9 +98,8 @@ export default function ModelPage({ uploadedFiles }) {
           <div className="flex flex-col md:flex-row justify-around w-full px-4 lg:px-12 mt-7 mb-8 gap-4">
             {modelData && modelData.map((model, index) => (
                 <CardContainer
-                    key={`model-${index}`}
+                    key={`model-${model.ModelId}`} // It's better to use ModelId if available
                     model={model}
-                    className="mb-4 md:mb-0 md:mx-2"
                 />
             ))}
           </div>

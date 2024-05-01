@@ -1,10 +1,10 @@
 using System.Text.Json;
 using API.Extensions;
-using Application.Services;
+using API.Services;
 using Microsoft.EntityFrameworkCore;
 using MediatR;
 using Persistence;
-using Application.Models.Handlers; 
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,12 +14,37 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
 
-builder.Services.AddScoped<MockDataService>();
+// Register ReisplannerService for dependency injection
+builder.Services.AddSingleton<IReisplannerService, ReisplannerService>();
+builder.Services.AddMemoryCache();
 
-builder.Services.AddMediatR(cfg => {
-    cfg.RegisterServicesFromAssembly(typeof(GetModelsQueryHandler).Assembly);
+// builder.Services.AddSingleton<FileStorageService>();
+
+// Configure CORS (if needed)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", policy =>
+    {
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+    });
 });
+
+// Register other services
+// Uncomment and modify as needed
+// builder.Services.AddMediatR(cfg => {
+//     cfg.RegisterServicesFromAssembly(typeof(GetModelsQueryHandler).Assembly);
+// });
+
 builder.Services.AddApplicationServices(builder.Configuration);
+
+// Add Swagger/OpenAPI service registration if in development environment
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSwaggerGen(c =>
+    {
+        c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+    });
+}
 
 var app = builder.Build();
 

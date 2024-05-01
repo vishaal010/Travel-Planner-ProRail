@@ -51,6 +51,7 @@ const   HomePage: React.FC<HomePageProps> = ({ activities, onFilesUploaded }) =>
         <HomeHero onFilesUploaded={onFilesUploaded} />
       </motion.div>
       {guidePlanVisible && <GuidePlan />}
+      
     </motion.div>
   )
 }

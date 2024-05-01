@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import TrainAnimation from "./animation/TrainAnimation.tsx";
 
 export default function GuidePlan() {
   const stepVariants = {
@@ -38,10 +39,11 @@ export default function GuidePlan() {
   ]
 
   return (
-    <div className="bg-gray-750 p-12">
-      <h2 className="text-2xl md:text-3xl text-blue-950 font-bold lg:text-4xl text-center mb-8 font-roboto">
-        Plan uw Route naar Perfectie
+    <div className="bg-gray-750 p-16">
+      <h2 className="text-2xl md:text-3xl text-blue-950 font-bold lg:text-4xl text-center mb-20 font-roboto">
+        Vergelijk hier je Modellen van de Toekomst
       </h2>
+      {/*<TrainAnimation/>*/}
 
       <div className="relative grid md:grid-cols-3 gap-4">
         {steps.map((step, index) => (
@@ -65,7 +67,6 @@ export default function GuidePlan() {
             <p className="font font-roboto">{step.title}</p>
           </motion.div>
         ))}
-        {/* Tenor GIF goes here */}
       </div>
     </div>
   )
