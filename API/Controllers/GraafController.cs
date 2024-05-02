@@ -57,9 +57,8 @@ namespace API.Controllers
                     {
                         await file.CopyToAsync(stream);
                     }
-                    // Save the path in the static list or a more persistent storage
                     UploadedFilePaths.Add(filePath);
-                    await _reisplannerService.PrepareGraphDataAsync(filePath); // Optionally prepare data immediately
+                    await _reisplannerService.PrepareGraphDataAsync(filePath); 
                     responses.Add(new { fileName = file.FileName, message = "File uploaded and processed successfully." });
                 }
                 catch (Exception ex)
@@ -73,7 +72,7 @@ namespace API.Controllers
         }
 
         [HttpGet("adviezen")]
-        public async Task<IActionResult> GetAdviezen([FromQuery] string van, [FromQuery] string naar)
+        public async Task<IActionResult> GetAdviezen([FromQuery] string van, [FromQuery] string naar, [FromQuery] int maxReisadviezen, [FromQuery] int bandBreedte)
         {
             
             try
@@ -81,7 +80,7 @@ namespace API.Controllers
                 List<string> jsonModels = new List<string>(); // Change to a list of strings
                 foreach (var filePath in UploadedFilePaths)
                 {
-                    string json = await _reisplannerService.GetModelAsync(van, naar, filePath);
+                    string json = await _reisplannerService.GetModelAsync(van, naar, filePath, maxReisadviezen, bandBreedte);
                     jsonModels.Add(json);
                 }
                 // This will return an array of JSON strings representing each model

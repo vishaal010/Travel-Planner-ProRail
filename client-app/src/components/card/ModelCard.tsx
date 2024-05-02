@@ -96,6 +96,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
             <TrainBlock
                 key={segment.SegmentId}
                 train={segment.TreinType}
+                SerieNaam={segment.SerieNaam}
                 duration={segment.SegmentDuur}
                 maxDuration={Math.max(maxSegmentDuur)}
             />
@@ -272,7 +273,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
                                       lineHeight: '12px',
                                     }}
                                 >
-                      5min
+                      5 min. overstap tijd
                     </span>
                                 <div className="flex-grow border-t border-red-950 border-dotted"></div>
                               </div>

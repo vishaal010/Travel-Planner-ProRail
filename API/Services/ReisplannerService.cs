@@ -21,7 +21,7 @@ public class ReisplannerService : IReisplannerService
     }
     
 
-public async Task<string> GetModelAsync(string van, string naar, string filePath)
+public async Task<string> GetModelAsync(string van, string naar, string filePath,int maxReisadviezen = 5, int bandbreedte = 20)
     {
          if (!_cache.TryGetValue(filePath, out ReisplannerGraaf graaf))
         {
@@ -30,9 +30,9 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
         }
          _logger.LogInformation("Geef mij station namen {graaf}",graaf.StationVolledigeNamen);
         var reisplanner = new Planner(graaf);
-        var model = new Model(); // Initialize your model here
+        var model = new Model(); 
 
-        // Extract file name without extension
+
         var fileName = Path.GetFileNameWithoutExtension(filePath);
         model.ModelNaam = fileName;
         
@@ -41,8 +41,8 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
         {
             Van = van,
             Naar = naar,
-            MaxReisadviezen = 3,
-            Bandbreedte = 50
+            MaxReisadviezen = maxReisadviezen   ,
+            Bandbreedte = bandbreedte
         };
 
         _logger.LogInformation($"ReisadviesAanvraag created for Van: {van} to Naar: {naar}");
@@ -117,38 +117,60 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
         return modifiedJson;
     }
     
+    private static bool _isExecuted = false;
+    private static readonly object Lock = new object();
 
+   
     public async Task<List<StationName>> GetStationNamesAsync(string filePath)
     {
-        _logger.LogInformation("Invoked GetStationNamesAsync with filePath: {FilePath}", filePath);
-        List<StationName> stationNamesWithKeys;
-        if (!_cache.TryGetValue(filePath, out ReisplannerGraaf graaf))
+        List<StationName> stationNamesWithKeys = new List<StationName>();
+
+        // Check and update the _isExecuted flag within the lock statement
+        bool shouldExecute = false;
+        lock (Lock)
         {
-            graaf = await Task.Run(() => Utils.LeesGraaf(filePath));
-            _cache.Set(filePath, graaf, TimeSpan.FromHours(1));
-            _logger.LogInformation("Graph data loaded and cached for {FilePath}", filePath);
-        }
-        else
-        {
-            _logger.LogInformation("Graph data retrieved from cache for {FilePath}", filePath);
+            if (!_isExecuted)
+            {
+                _isExecuted = true;
+                shouldExecute = true;
+            }
         }
 
-        if (graaf != null && graaf.StationVolledigeNamen != null)
+        // Proceed with processing outside the lock if shouldExecute is true
+        if (shouldExecute)
         {
-            stationNamesWithKeys = graaf.StationVolledigeNamen
-                .Select(kv => new StationName { Key = kv.Key, Value = kv.Value })
-                .ToList();
-            _logger.LogInformation("Retrieved station names with keys: {StationNamesWithKeys}", stationNamesWithKeys);
+            _logger.LogInformation("Invoked GetStationNamesAsync with filePath: {FilePath}", filePath);
+
+            if (!_cache.TryGetValue(filePath, out ReisplannerGraaf graaf))
+            {
+                graaf = await Task.Run(() => Utils.LeesGraaf(filePath));
+                _cache.Set(filePath, graaf, TimeSpan.FromHours(1));
+                _logger.LogInformation("Graph data loaded and cached for {FilePath}", filePath);
+            }
+            else
+            {
+                _logger.LogInformation("Graph data retrieved from cache for {FilePath}", filePath);
+            }
+
+            if (graaf != null && graaf.StationVolledigeNamen != null)
+            {
+                stationNamesWithKeys = graaf.StationVolledigeNamen
+                    .Select(kv => new StationName { Key = kv.Key, Value = kv.Value })
+                    .ToList();
+                _logger.LogInformation("Retrieved station names with keys: {StationNamesWithKeys}", stationNamesWithKeys);
+            }
+            else
+            {
+                _logger.LogWarning("No station names found or graaf object is null for {FilePath}", filePath);
+            }
         }
         else
         {
-            stationNamesWithKeys = new List<StationName>();
-            _logger.LogWarning("No station names found or graaf object is null for {FilePath}", filePath);
+            _logger.LogInformation("Skipping execution as the function has already been executed.");
         }
 
         return stationNamesWithKeys;
     }
-
 
     public async Task PrepareGraphDataAsync(string filePath)
     {
@@ -159,7 +181,6 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
             if (!_cache.TryGetValue(filePath, out ReisplannerGraaf graaf))
             {
                 graaf = await Task.Run(() => Utils.LeesGraaf(filePath));
-                _logger.LogInformation("test {test}", graaf.StationVolledigeNamen );
                 _cache.Set(filePath, graaf, TimeSpan.FromHours(1));
                 _logger.LogInformation("Graph data loaded and cached successfully for {FilePath}", filePath);
             }
