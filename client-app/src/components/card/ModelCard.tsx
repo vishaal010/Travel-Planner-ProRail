@@ -199,7 +199,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
                 alt="Hour Division Icon"
               />
               <p className="tracking-wide">{reisAdvies.UurPatroon}</p>
-              <TooltipComponent message="Uurverdeling" position="right">
+              <TooltipComponent message="Minuut van het uur wanneer er een trein aankomt" position="right">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
