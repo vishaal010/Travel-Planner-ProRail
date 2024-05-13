@@ -20,21 +20,52 @@ const SearchSection = ({ onSearchInitiated }) => {
   const handleSearchClick = () => {
     const trimmedInputOne = inputOne.trim();
     const trimmedInputTwo = inputTwo.trim();
+    const maxReisadviezen = parseInt(inputRA, 10);
+    const bandBreedte = parseInt(inputBB, 10);
 
+    // Check if the locations are filled
     if (!trimmedInputOne || !trimmedInputTwo) {
       setErrorMessage('Er is geen locatie ingevuld.');
       return;
     }
 
+    // Check if the locations are the same
     if (trimmedInputOne.toLowerCase() === trimmedInputTwo.toLowerCase()) {
       setErrorMessage('Van en naar zijn hetzelfde.');
       return;
     }
 
+    // Validate the numeric inputs
+    if (maxReisadviezen <= 0 || maxReisadviezen > 50 || bandBreedte <= 0 || bandBreedte > 50) {
+      setErrorMessage('Aantal Reisadviezen en Bandbreedte moeten tussen 1 en 50 zijn.');
+      return;
+    }
+
+    // Clear the error message if all validations pass
     setErrorMessage('');
-    // Use the updated state values for inputRA and inputBB
-    onSearchInitiated({ van: trimmedInputOne, naar: trimmedInputTwo, maxReisadviezen: inputRA, bandBreedte: inputBB, filter: filterOption });
+
+    // Initiate the search with validated data
+    onSearchInitiated({ van: trimmedInputOne, naar: trimmedInputTwo, maxReisadviezen, bandBreedte, filter: filterOption });
   };
+
+  async function clearCache() {
+    try {
+      const response = await fetch('http://localhost:5000/api/cache/clear', {
+        method: 'POST'
+      });
+
+      if (response.ok) {
+        alert("Cache cleared successfully!");
+        window.location.href = "/"; // Redirect to homepage
+      } else {
+        alert("Failed to clear cache!");
+      }
+    } catch (error) {
+      console.error("Error clearing cache:", error);
+      alert("Error clearing cache!");
+    }
+  }
+
 
   return (
       <div className="bg-red-950 p-3">
@@ -63,7 +94,7 @@ const SearchSection = ({ onSearchInitiated }) => {
             <hr className="border-white"/>
           </div>
           <div className="flex items-center mb-4 mt-2 cursor-pointer" onClick={toggleAdvancedOptions}>
-            <h2 className="text-white text-lg font-roboto underline-effect mb-0">Geadvanceerde Opties</h2>
+            <h2 className="text-white text-lg font-roboto underline-effect mb-0">Geavanceerde Opties</h2>
             <img
                 src="/assets/white_arrow.svg"
                 className={`ml-2 w-4 h-4 transform transition-transform duration-300 ${showAdvancedOptions ? 'rotate-180' : ''}`}
@@ -80,6 +111,8 @@ const SearchSection = ({ onSearchInitiated }) => {
                       value={inputRA}
                       onChange={(e) => setInputRA(e.target.value)}
                       placeholder="Type here"
+                      min="5" // Minimum value
+                      max="100" // Maximum value
                       className="input input-bordered input-error w-32"
                   />
                 </div>
@@ -107,6 +140,8 @@ const SearchSection = ({ onSearchInitiated }) => {
                       value={inputBB}
                       onChange={(e) => setInputBB(e.target.value)}
                       placeholder="Bandbreedte"
+                      min="1" // Minimum value
+                      max="60" // Maximum value to represent minutes range
                       className="input input-bordered input-error w-32"
                   />
                 </div>
@@ -114,7 +149,18 @@ const SearchSection = ({ onSearchInitiated }) => {
           )}
 
 
-          <div className="flex justify-center md:justify-end">
+
+
+          <div className="flex justify-between items-center">
+            <ButtonWithHover
+                onClick={clearCache}
+                text="Ga Terug"
+                bgColor="bg-white"
+                hoverBgColor="bg-gray-300"
+                textColor="text-black"
+                imgSrc="/assets/left.png"
+            />
+
             <ButtonWithHover
                 onClick={handleSearchClick}
                 disabled={!inputOne.trim() || !inputTwo.trim()}

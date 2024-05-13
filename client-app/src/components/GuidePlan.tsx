@@ -22,18 +22,18 @@ export default function GuidePlan() {
     {
       id: 1,
       title:
-        'Begin met het uploaden van 1 of meerdere dienstregelingmodellen in Graaf(txtpb)-formaat.',
+        'Begin met het uploaden van 1 of meerdere dienstregelingmodellen.',
       icon: 'assets/step1.png',
     },
     {
       id: 2,
       title:
-        'Voer twee stations in en onze algoritmen berekenen de kortste en alternatieve routes.',
+        'Voer twee stations in en ons algoritme berekent de kortste en alternatieve routes.',
       icon: 'assets/step2.png',
     },
     {
       id: 3,
-      title: 'Ontvang een lijst met reisadviezen met details over elke reisadvies ',
+      title: 'Bekijk een lijst met reisadviezen',
       icon: 'assets/step3.png',
     },
   ]
@@ -41,11 +41,11 @@ export default function GuidePlan() {
   return (
       <div className="bg-gray-750 p-12">
         <h2 className="text-2xl md:text-3xl text-blue-950 font-bold lg:text-4xl text-center mb-4 font-roboto">
-          De Toekomst van Dienstregelingen Begint Nu
+          De Dienstregelingen van de Toekomst Begint Nu
         </h2>
-        <p className="text-center font-medium text-gray-600 mb-24 font-roboto max-w-md mx-auto">
-          Visualiseer je reis moeiteloos met onze geavanceerde digitale reisplanner. Upload modellen en
-            ontvang diverse reisadviezen om je modellen keurig te vergelijken.
+        <p className="text-center font-medium text-gray-600 mb-12 font-roboto max-w-md mx-auto">
+          Toon je reis moeiteloos met onze geavanceerde digitale reisplanner. Upload dienstregelingen en
+            ontvang diverse reisadviezen om je dienstregelingen keurig te vergelijken.
           </p>
         {/*<TrainAnimation/>*/}
         <hr className="w-full"/>

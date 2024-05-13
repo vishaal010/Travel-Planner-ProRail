@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using API.Extensions;
 using API.Services;
 using Domain;
 using Microsoft.Extensions.Caching.Memory;
@@ -20,15 +21,21 @@ public class ReisplannerService : IReisplannerService
         _cache = cache;
     }
     
+    public void ClearCache()
+    {
+        foreach (var key in _cache.GetKeys())
+        {
+            _cache.Remove(key);
+        }
+    }
 
-public async Task<string> GetModelAsync(string van, string naar, string filePath,int maxReisadviezen = 5, int bandbreedte = 20)
+    public async Task<string> GetModelAsync(string van, string naar, string filePath,int maxReisadviezen = 5, int bandbreedte = 20)
     {
          if (!_cache.TryGetValue(filePath, out ReisplannerGraaf graaf))
         {
             _logger.LogError("Graph data not found in cache for {FilePath}", filePath);
             throw new InvalidOperationException("Graph data not found.");
         }
-         _logger.LogInformation("Geef mij station namen {graaf}",graaf.StationVolledigeNamen);
         var reisplanner = new Planner(graaf);
         var model = new Model(); 
 
@@ -82,7 +89,6 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
 
                 foreach (var stapNode in segmentNode["Segmenten"].AsArray())
                 {
-                    // Assign a unique StappenId to each Stappen array
                     stapNode["StappenId"] = $"StappenId_{stapCounter++}";
 
                     foreach (var step in stapNode["Stappen"].AsArray())
@@ -110,7 +116,6 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
 
         _logger.LogInformation("Modified Reisadviezen in JSON with SegmentIds.");
 
-// Convert the modified JsonNode back to a JSON string
         var modifiedJson = node.ToJsonString();
         _logger.LogInformation("Serialized Modified Model: {ModifiedJson}", modifiedJson);
 
@@ -120,12 +125,12 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
     private static bool _isExecuted = false;
     private static readonly object Lock = new object();
 
+    
    
     public async Task<List<StationName>> GetStationNamesAsync(string filePath)
     {
         List<StationName> stationNamesWithKeys = new List<StationName>();
 
-        // Check and update the _isExecuted flag within the lock statement
         bool shouldExecute = false;
         lock (Lock)
         {
@@ -136,7 +141,6 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
             }
         }
 
-        // Proceed with processing outside the lock if shouldExecute is true
         if (shouldExecute)
         {
             _logger.LogInformation("Invoked GetStationNamesAsync with filePath: {FilePath}", filePath);
@@ -171,7 +175,7 @@ public async Task<string> GetModelAsync(string van, string naar, string filePath
 
         return stationNamesWithKeys;
     }
-
+    
     public async Task PrepareGraphDataAsync(string filePath)
     {
         try

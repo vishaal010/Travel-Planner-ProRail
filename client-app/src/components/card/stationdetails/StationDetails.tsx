@@ -135,7 +135,7 @@ const StationDetails: React.FC<StationDetailsProps> = ({stations, showIntermedia
                   onClick={toggleIntermediateStations}
                 >
                   <img
-                    src="/assets/arrow_up.svg"
+                    src="/assets/arrow_down.svg"
                     alt="Toggle Details"
                     className={`ml-2 transition-transform duration-500 ${
                       showIntermediateStations ? 'rotate-180' : ''

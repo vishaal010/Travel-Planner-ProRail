@@ -39,18 +39,13 @@ const CardContainer = ({ model, isLoading }) => {
     // @ts-ignore
     setShowDetailsArray(updatedShowDetailsArray);
   };
-
-
-  // Commented out JSON stringify as it's not needed for rendering
-  // const indentedJson = JSON.stringify(modelData, null, 2);
-  // console.log(indentedJson);
-
+  
   return (
       <div className="flex flex-col rounded mx-auto w-full max-w-xl">
         <div className="bg-gray-850 p-1">
           {modelData && (
-              <h2 className="text-center text-base font-[Roboto] font-extralight">
-                Model: {modelData.ModelNaam}
+              <h2 className="text-center text-base font-[Roboto] font-light">
+                 {modelData.ModelNaam}
               </h2>
           )}
         </div>

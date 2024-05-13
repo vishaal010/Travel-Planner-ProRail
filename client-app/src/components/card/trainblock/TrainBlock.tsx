@@ -9,14 +9,14 @@ type TrainBlockProps = {
 
 const TrainBlock: React.FC<TrainBlockProps> = ({ train, duration, maxDuration ,SerieNaam}) => {
   // Calculate the width percentage of each train block relative to maxDuration
-  const widthPercent = (duration / maxDuration) * 100;
+  const widthPercent = (duration / maxDuration) * 100 + 50;
 
   return (
     <div
       className="bg-gray-300 rounded py-1 flex justify-center items-center"
-      style={{ width: `${widthPercent}%` }} // Use calculated width percentage
+      style={{ width: `${widthPercent}%`  }} // Use calculated width percentage
     >
-      <span>{train} {SerieNaam}</span>
+      <span className="text-sm">{train} {SerieNaam}</span>
     </div>
   );
 };

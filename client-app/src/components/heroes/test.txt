@@ -117,7 +117,7 @@
   <div className="text-red-600 mt-4 cursor-pointer flex justify-end items-center" onClick={onToggleShowDetails}>
     <span>Details</span>
     <img
-      src="/assets/arrow_up.svg" // Ensure this is the correct path to your image file
+      src="/assets/arrow_down.svg" // Ensure this is the correct path to your image file
       alt="Toggle Details"
       className={`ml-2 transition-transform duration-500 ${showDetails ? 'rotate-180' : ''}`} // Add transition styles for rotation
       style={{ width: '16px', height: '16px' }} // Set specific width and height
