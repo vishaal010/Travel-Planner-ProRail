@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using API.Extensions;
 using API.Services;
 using Domain;
 using Microsoft.Extensions.Caching.Memory;

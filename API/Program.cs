@@ -1,9 +1,6 @@
 using System.Text.Json;
-using API.Extensions;
 using API.Services;
-using Microsoft.EntityFrameworkCore;
 using MediatR;
-using Persistence;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,7 +32,6 @@ builder.Services.AddCors(options =>
 //     cfg.RegisterServicesFromAssembly(typeof(GetModelsQueryHandler).Assembly);
 // });
 
-builder.Services.AddApplicationServices(builder.Configuration);
 
 // Add Swagger/OpenAPI service registration if in development environment
 if (builder.Environment.IsDevelopment())
@@ -64,16 +60,5 @@ app.MapControllers();
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 
-try
-{
-    var context = services.GetRequiredService<DataContext>();
-    await context.Database.MigrateAsync();
-    await Seed.SeedData(context);
-}
-catch (Exception ex)
-{
-    var logger = services.GetRequiredService<ILogger<Program>>();
-    logger.LogError(ex, "An error occurred during migration");
-}
 
 app.Run();

@@ -18,8 +18,8 @@ export default function ModelPage({ uploadedFiles }) {
     setShowLottie(false);
     setVan(data.van);
     setNaar(data.naar);
-    setMaxReisadviezen(data.maxReisadviezen); // Extract the value from data
-    setBandBreedte(data.bandBreedte); // Extract the value from data
+    setMaxReisadviezen(data.maxReisadviezen); 
+    setBandBreedte(data.bandBreedte); 
   };
 
   useEffect(() => {
