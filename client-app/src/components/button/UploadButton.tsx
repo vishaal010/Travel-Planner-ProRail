@@ -16,7 +16,7 @@ export default function UploadButton({ onFilesUploaded }) {
         if (event.target.files?.length) {
             newInputList[index] = event.target.files[0];
             newFileNames[index] = event.target.files[0].name;
-            newInputKeys[index] = Math.random().toString(); 
+            newInputKeys[index] = Math.random().toString();
             setErrorMessage('');
         } else {
             setErrorMessage('Please select a file.');
@@ -26,7 +26,7 @@ export default function UploadButton({ onFilesUploaded }) {
         setFileNames(newFileNames);
         setInputKeys(newInputKeys);
     };
-    
+
     const handleFileDelete = (index: number) => {
         const newInputList = [...inputList];
         const newFileNames = [...fileNames];
@@ -34,11 +34,11 @@ export default function UploadButton({ onFilesUploaded }) {
 
         newInputList[index] = '';
         newFileNames[index] = '';
-        newInputKeys[index] = Math.random().toString(); 
+        newInputKeys[index] = Math.random().toString();
 
         setInputList(newInputList);
         setFileNames(newFileNames);
-        setInputKeys(newInputKeys); 
+        setInputKeys(newInputKeys);
     };
 
     const handleSubmit = async () => {
@@ -87,6 +87,7 @@ export default function UploadButton({ onFilesUploaded }) {
         if (inputList.length < 2) {
             setInputList([...inputList, '']);
             setFileNames([...fileNames, '']);
+            setInputKeys([...inputKeys, Math.random().toString()]);
         }
     };
 
@@ -97,7 +98,7 @@ export default function UploadButton({ onFilesUploaded }) {
                 <div className="modal-box">
                     <h3 className="font-bold text-lg mb-4">Upload hier je Dienstregeling</h3>
                     <p className="mb-8 font-roboto italic">
-                        Bestandsformaat = <span className="font-bold">txt.pb</span>
+                        Bestandsformaat = <span className="font-bold">.txtpb</span>
                     </p>
                     {errorMessage && ( // Alert for error message
                         <div role="alert" className="flex items-center bg-red-200 text-red-800 p-3 rounded-md mb-4">
@@ -118,14 +119,16 @@ export default function UploadButton({ onFilesUploaded }) {
                                     <button onClick={() => handleFileDelete(index)} className="ml-2 text-red-600">Delete</button>
                                 </p>
                             )}
-                            <div key={inputKeys[index]}>
-                                <input
-                                    type="file"
-                                    accept=".txtpb"
-                                    onChange={(e) => handleFileChange(e, index)}
-                                    className="file-input file-input-ghost file-input-primary w-full max-w-xs mb-2"
-                                />
-                            </div>
+                            {!fileNames[index] && (
+                                <div key={inputKeys[index]}>
+                                    <input
+                                        type="file"
+                                        accept=".txtpb"
+                                        onChange={(e) => handleFileChange(e, index)}
+                                        className="file-input file-input-ghost file-input-primary w-full max-w-xs mb-2"
+                                    />
+                                </div>
+                            )}
                             {index < inputList.length - 1 && <hr className="my-4" />}
                         </React.Fragment>
                     ))}

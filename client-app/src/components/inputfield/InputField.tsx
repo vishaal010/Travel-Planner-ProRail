@@ -75,6 +75,7 @@ const InputField = ({ inputOne, setInputOne, inputTwo, setInputTwo }) => {
                 });
             }
         }
+        options.sort((a, b) => a.label.localeCompare(b.label));
         return options;
     };
 

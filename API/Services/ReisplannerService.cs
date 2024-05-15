@@ -1,9 +1,8 @@
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using API.Services;
 using Domain;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 using Reisplanner.Adapter;
 
 public class ReisplannerService : IReisplannerService
@@ -11,7 +10,7 @@ public class ReisplannerService : IReisplannerService
     private readonly ILogger<ReisplannerService> _logger;
     private Dictionary<string, ReisplannerGraaf> graphs = new Dictionary<string, ReisplannerGraaf>();
     private IMemoryCache _cache;
-
+    private CancellationTokenSource _cacheTokenSource = new CancellationTokenSource();
     
 
     public ReisplannerService(ILogger<ReisplannerService> logger,  IMemoryCache cache)
@@ -20,12 +19,23 @@ public class ReisplannerService : IReisplannerService
         _cache = cache;
     }
     
+    
     public void ClearCache()
     {
-        foreach (var key in _cache.GetKeys())
-        {
-            _cache.Remove(key);
-        }
+        _cacheTokenSource.Cancel();
+        
+        _cacheTokenSource = new CancellationTokenSource();
+
+        _logger.LogInformation("Cache cleared successfully.");
+    }
+
+    public void SetCache(string key, object value, TimeSpan duration)
+    {
+        var options = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(duration)
+            .AddExpirationToken(new CancellationChangeToken(_cacheTokenSource.Token));
+
+        _cache.Set(key, value, options);
     }
 
     public async Task<string> GetModelAsync(string van, string naar, string filePath,int maxReisadviezen = 5, int bandbreedte = 20)
@@ -65,10 +75,8 @@ public class ReisplannerService : IReisplannerService
         var adviezen = reisplanner.GeefReisAdviezen(aanvraag, instellingen);
         model.Data.AddRange(adviezen);
 
-        // Specify JsonSerializerOptions with indentation enabled
         var indentOptions = new JsonSerializerOptions() { WriteIndented = true };
 
-        // Serialize your model object to JSON with indentation
         var jsonifyModel = JsonSerializer.Serialize(model, indentOptions);
         _logger.LogInformation("Serialized Model: {JsonifyModel}", jsonifyModel);
 
@@ -76,7 +84,7 @@ public class ReisplannerService : IReisplannerService
         _logger.LogInformation("JsonNode contents: {NodeJson}", node.ToJsonString());
 
         int reisAdviesCounter = 0;
-        int stapCounter = 0;  // Initialize a counter for each Stappen array
+        int stapCounter = 0; 
 
         foreach (var reisAdviesNode in node["Data"].AsArray())
         {
@@ -180,11 +188,11 @@ public class ReisplannerService : IReisplannerService
         try
         {
             _logger.LogInformation("Starting to load graph data from file: {FilePath}", filePath);
-        
+    
             if (!_cache.TryGetValue(filePath, out ReisplannerGraaf graaf))
             {
                 graaf = await Task.Run(() => Utils.LeesGraaf(filePath));
-                _cache.Set(filePath, graaf, TimeSpan.FromHours(1));
+                SetCache(filePath, graaf, TimeSpan.FromHours(1));
                 _logger.LogInformation("Graph data loaded and cached successfully for {FilePath}", filePath);
             }
             else
@@ -198,5 +206,6 @@ public class ReisplannerService : IReisplannerService
             throw;  
         }
     }
+
     
 }

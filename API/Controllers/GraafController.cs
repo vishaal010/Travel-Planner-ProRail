@@ -26,6 +26,24 @@ namespace API.Controllers
             _reisplannerService = reisplannerService;
             _targetFolder = Path.Combine(_environment.ContentRootPath, "Graaf");
         }
+        
+        private void ClearGraafFolder()
+        {
+            try
+            {
+                var directoryInfo = new DirectoryInfo(_targetFolder);
+                foreach (FileInfo file in directoryInfo.GetFiles())
+                {
+                    file.Delete();
+                }
+                _logger.LogInformation("All files in Graaf folder have been successfully deleted.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to delete files in the Graaf folder.");
+                throw; 
+            }
+        }
 
         // Static list to hold file paths for simplicity
         public static List<string> UploadedFilePaths = new List<string>();
@@ -33,6 +51,7 @@ namespace API.Controllers
         [HttpPost("upload")]
         public async Task<IActionResult> Upload(List<IFormFile> files)
         {
+            ClearGraafFolder();
             if (files == null || files.Count == 0)
             {
                 return BadRequest("No files uploaded.");
@@ -67,7 +86,7 @@ namespace API.Controllers
                     responses.Add(new { fileName = file.FileName, error = ex.Message });
                 }
             }
-
+            ClearGraafFolder();
             return Ok(responses);
         }
 
@@ -105,9 +124,18 @@ namespace API.Controllers
                 foreach (var filePath in UploadedFilePaths)
                 {
                     var stationNames = await _reisplannerService.GetStationNamesAsync(filePath);
-                    allStationNames.Add(filePath, stationNames);
-                    _logger.LogInformation("Successfully retrieved station names for filePath: {FilePath}", filePath);
+                    if (!allStationNames.ContainsKey(filePath))
+                    {
+                        allStationNames.Add(filePath, stationNames);
+                        _logger.LogInformation("Successfully retrieved station names for filePath: {FilePath}", filePath);
+                    }
+                    else
+                    {
+                        // Handle the case where the key already exists, e.g., update or log a message.
+                        _logger.LogWarning("Skipping duplicate file path: {FilePath}", filePath);
+                    }
                 }
+
 
                 return Ok(allStationNames);
             }

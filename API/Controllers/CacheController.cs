@@ -10,6 +10,8 @@ public class CacheController : ControllerBase
     {
         _reisplannerService = reisplannerService;
     }
+    
+    
 
     [HttpPost("clear")]
     public IActionResult ClearCache()

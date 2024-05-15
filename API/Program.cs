@@ -1,6 +1,5 @@
 using System.Text.Json;
 using API.Services;
-using MediatR;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -8,7 +8,6 @@ public static class MemoryCacheExtensions
     {
         if (memoryCache is MemoryCache cache)
         {
-            // Use reflection to access the private collection of cache entries
             var entriesField = typeof(MemoryCache).GetProperty("EntriesCollection", BindingFlags.NonPublic | BindingFlags.Instance);
             if (entriesField != null)
             {

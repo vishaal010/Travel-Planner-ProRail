@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import InputField from './inputfield/InputField.tsx';
 import ButtonWithHover from './button/ButtonWithHover.tsx';
 import TooltipComponent from "./tooltip/tooltip.tsx";
+
 
 const SearchSection = ({ onSearchInitiated }) => {
   const [inputOne, setInputOne] = useState('');
@@ -17,6 +18,12 @@ const SearchSection = ({ onSearchInitiated }) => {
     setShowAdvancedOptions(prevState => !prevState);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (['-', 'e', '.', '+'].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+  
   const handleSearchClick = () => {
     const trimmedInputOne = inputOne.trim();
     const trimmedInputTwo = inputTwo.trim();
@@ -55,7 +62,6 @@ const SearchSection = ({ onSearchInitiated }) => {
       });
 
       if (response.ok) {
-        alert("Cache cleared successfully!");
         window.location.href = "/"; // Redirect to homepage
       } else {
         alert("Failed to clear cache!");
@@ -66,6 +72,10 @@ const SearchSection = ({ onSearchInitiated }) => {
     }
   }
 
+  const handleBandBreedteInput = (e: ChangeEvent<HTMLInputElement>) => {
+    const cleanedValue = e.target.value.replace(/[-e.+]/g, '');
+    setInputBB(cleanedValue);
+  };
 
   return (
       <div className="bg-red-950 p-3">
@@ -75,10 +85,8 @@ const SearchSection = ({ onSearchInitiated }) => {
           </h1>
           {errorMessage && (
               <div role="alert" className="flex items-center bg-red-200 text-red-800 p-3 rounded-md mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6 mr-2" fill="none"
-                     viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>{errorMessage}</span>
               </div>
@@ -91,7 +99,7 @@ const SearchSection = ({ onSearchInitiated }) => {
           />
 
           <div className="mt-6">
-            <hr className="border-white"/>
+            <hr className="border-white" />
           </div>
           <div className="flex items-center mb-4 mt-2 cursor-pointer" onClick={toggleAdvancedOptions}>
             <h2 className="text-white text-lg font-roboto underline-effect mb-0">Geavanceerde Opties</h2>
@@ -110,16 +118,15 @@ const SearchSection = ({ onSearchInitiated }) => {
                       id="InputRA"
                       value={inputRA}
                       onChange={(e) => setInputRA(e.target.value)}
+                      onKeyDown={handleKeyDown}
                       placeholder="Type here"
-                      min="5" // Minimum value
-                      max="100" // Maximum value
                       className="input input-bordered input-error w-32"
                   />
                 </div>
 
                 <div className="flex items-center">
                   <label className="block font-roboto text-white mr-2">Bandbreedte:</label>
-                  <TooltipComponent message="Hoeveel minuten het mag afwijken van het korste reisdvies!" position="bottom">
+                  <TooltipComponent message="Hoeveel minuten het mag afwijken van het kortste reisadvies!" position="bottom">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -136,20 +143,17 @@ const SearchSection = ({ onSearchInitiated }) => {
                   </TooltipComponent>
                   <input
                       type="number"
+                      onInput={handleBandBreedteInput}
                       id="InputBB"
                       value={inputBB}
                       onChange={(e) => setInputBB(e.target.value)}
+                      onKeyDown={handleKeyDown}
                       placeholder="Bandbreedte"
-                      min="1" // Minimum value
-                      max="60" // Maximum value to represent minutes range
                       className="input input-bordered input-error w-32"
                   />
                 </div>
               </div>
           )}
-
-
-
 
           <div className="flex justify-between items-center">
             <ButtonWithHover
@@ -158,7 +162,7 @@ const SearchSection = ({ onSearchInitiated }) => {
                 bgColor="bg-white"
                 hoverBgColor="bg-gray-300"
                 textColor="text-black"
-                imgSrc="/assets/left.png"
+                // imgSrc="/assets/left.png"
             />
 
             <ButtonWithHover
@@ -175,7 +179,6 @@ const SearchSection = ({ onSearchInitiated }) => {
         </div>
       </div>
   );
-
 };
 
 export default SearchSection;
