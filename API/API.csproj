@@ -12,11 +12,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Reisplanner.Adapter" Version="1.0.0" />
+    <PackageReference Include="Reisplanner.Adapter" Version="1.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Graaf\" />
     <Folder Include="Reisplanner-package\" />
   </ItemGroup>
 

@@ -2,8 +2,8 @@ import React from 'react';
 
 type TrainBlockProps = {
   train: string;
-  duration: number; // Duration in minutes
-  maxDuration: number; // Maximum duration among all trains and transfers
+  duration: number; 
+  maxDuration: number; 
   SerieNaam: string;
 };
 

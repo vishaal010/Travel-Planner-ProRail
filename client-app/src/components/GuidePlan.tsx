@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion'
-import TrainAnimation from "./animation/TrainAnimation.tsx";
 
 export default function GuidePlan() {
   const stepVariants = {
@@ -22,7 +21,7 @@ export default function GuidePlan() {
     {
       id: 1,
       title:
-        'Begin met het uploaden van 1 of meerdere dienstregelingmodellen.',
+        'Begin met het uploaden van 1 of meerdere dienstregelingen.',
       icon: 'assets/step1.png',
     },
     {
@@ -41,7 +40,7 @@ export default function GuidePlan() {
   return (
       <div className="bg-gray-750 p-12">
         <h2 className="text-2xl md:text-3xl text-blue-950 font-bold lg:text-4xl text-center mb-4 font-roboto">
-          De Dienstregelingen van de Toekomst Begint Nu
+          De Dienstregeling van de Toekomst Begint Nu
         </h2>
         <p className="text-center font-medium text-gray-600 mb-12 font-roboto max-w-md mx-auto">
           Toon je reis moeiteloos met onze geavanceerde digitale reisplanner. Upload dienstregelingen en

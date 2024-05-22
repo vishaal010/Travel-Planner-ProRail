@@ -46,23 +46,25 @@ const InputField = ({ inputOne, setInputOne, inputTwo, setInputTwo }) => {
 
 
     useEffect(() => {
-        // Fetch station names from your backend or a local source
+        
         fetch('http://localhost:5000/api/graaf/station-names')
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    response.text().then(text => {
+                        throw new Error(`Request failed: ${response.status} - ${text}`);
+                    });
                 }
                 return response.json();
             })
             .then(data => {
-                console.log("Fetched station names:", data); // Log the raw data received
+                console.log(data)
                 const stationOptions = extractOptions(data);
-                console.log("Fetched updated names:", stationOptions); // Log the updated options
                 setStationOptions(stationOptions);
             })
             .catch(error => {
                 console.error("Failed to fetch station names:", error);
             });
+
     }, []);
 
     // Function to extract station options from the fetched data

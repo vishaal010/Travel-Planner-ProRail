@@ -71,6 +71,7 @@ public class ReisplannerService : IReisplannerService
             LogTussenStops = false,
             LogResultaten = true,
         };
+        
 
         var adviezen = reisplanner.GeefReisAdviezen(aanvraag, instellingen);
         model.Data.AddRange(adviezen);
@@ -86,37 +87,61 @@ public class ReisplannerService : IReisplannerService
         int reisAdviesCounter = 0;
         int stapCounter = 0; 
 
-        foreach (var reisAdviesNode in node["Data"].AsArray())
-        {
-            reisAdviesNode["ReisadviesId"] = Guid.NewGuid().ToString();
+       foreach (var reisAdviesNode in node["Data"].AsArray())
+       {
+           reisAdviesNode["ReisadviesId"] = Guid.NewGuid().ToString();
+    
 
-            foreach (var segmentNode in reisAdviesNode["Reisadviezen"].AsArray())
-            {
-                segmentNode["SegmentId"] = $"SegmentId_{reisAdviesCounter++}";
+           foreach (var segmentNode in reisAdviesNode["Reisadviezen"].AsArray())
+           {
+               segmentNode["SegmentId"] = $"SegmentId_{reisAdviesCounter++}";
 
-                foreach (var stapNode in segmentNode["Segmenten"].AsArray())
-                {
-                    stapNode["StappenId"] = $"StappenId_{stapCounter++}";
+               var stappenArray = segmentNode["Segmenten"].AsArray();
+               string lastStation = null, lastTrack = null;
+               for (int i = 0; i < stappenArray.Count; i++)
+               {
+                   var stapNode = stappenArray[i];
+                   stapNode["StappenId"] = $"StappenId_{stapCounter++}";
 
-                    foreach (var step in stapNode["Stappen"].AsArray())
-                    {
-                        var station = (string)step["Station"];
-                        _logger.LogInformation("Original Station Name: {OriginalStationName}", station);
+                   if (i > 0 && lastStation != null)
+                   {
+                       var currentStapNode = stappenArray[i]["Stappen"].AsArray()[0]; 
+                       var currentStation = (string)currentStapNode["Station"];
+                       var currentTrack = (string)currentStapNode["Spoor"];
 
-                        if (graaf.StationVolledigeNamen.ContainsKey(station))
-                        {
-                            var updatedStationName = graaf.StationVolledigeNamen[station];
-                            step["Station"] = updatedStationName;
-                            _logger.LogInformation("Updated Station Name: {UpdatedStationName}", updatedStationName);
-                        }
-                        else
-                        {
-                            _logger.LogInformation("Station name not found in dictionary: {StationName}", station);
-                        }
-                    }
-                }
-            }
-        }
+                  
+                       if (lastStation == currentStation)
+                       {
+                           var overstaptijdInSeconds = graaf.MinOverstaptijden[new(lastStation, lastTrack, currentTrack)];
+                           var overstaptijdInMinutes = overstaptijdInSeconds / 60; // Convert seconds to minutes
+                           stapNode["Overstaptijd"] = overstaptijdInMinutes;
+                           _logger.LogInformation($"Calculated overstaptijd: {overstaptijdInMinutes} minutes between track {lastTrack} and {currentTrack} at {lastStation}");
+                       }
+                   }
+
+                   var lastStep = stapNode["Stappen"].AsArray().Last();
+                   lastStation = (string)lastStep["Station"];
+                   lastTrack = (string)lastStep["Spoor"];
+
+                   foreach (var step in stapNode["Stappen"].AsArray())
+                   {
+                       var station = (string)step["Station"];
+                       if (graaf.StationVolledigeNamen.ContainsKey(station))
+                       {
+                           var updatedStationName = graaf.StationVolledigeNamen[station];
+                           step["Station"] = updatedStationName;
+                           _logger.LogInformation("Updated Station Name from {OriginalStationName} to {UpdatedStationName}", station, updatedStationName);
+                       }
+                       else
+                       {
+                           _logger.LogInformation("Station name not found in dictionary: {StationName}", station);
+                       }
+                   }
+
+                   _logger.LogInformation($"Last station updated to {lastStation}, track {lastTrack}");
+               } 
+           }
+       }
 
 
         _logger.LogInformation("Modified Reisadviezen in JSON with unique SegmentIds.");

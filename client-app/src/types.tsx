@@ -8,6 +8,7 @@ export interface Stappen {
   Station: string;
   Tijd?: string; 
   Spoor: string;
+  Overstaptijd:string;
 }
 
 export interface Segment {

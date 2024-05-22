@@ -22,7 +22,11 @@ const ModelCard: React.FC<ModelCardProps> = ({
   const [intermediateVisibility, setIntermediateVisibility] = useState({});
   const detailsRef = useRef(null);
   let trainBlocks = [];
-  // Log to check the structure of reisAdvies.segmenten
+
+  const hours = Math.floor(reisAdvies.ReisDuur / 60);
+  const minutes = reisAdvies.ReisDuur % 60;
+  const durationString = hours > 0 ? `${hours}u:${minutes}min` : `${minutes}min`;
+  
   useEffect(() => {
     if (!reisAdvies || !Array.isArray(reisAdvies.Reisadviezen)) {
       console.error("Reisadviezen data is missing or invalid");
@@ -42,9 +46,6 @@ const ModelCard: React.FC<ModelCardProps> = ({
     setIntermediateVisibility(initialVisibility);
   }, [reisAdvies.Reisadviezen]);
 
-  const maxSegmentDuur = Math.max(...reisAdvies.Reisadviezen.flatMap(reisadvies =>
-      reisadvies.Segmenten.map(segment => segment.SegmentDuur)
-  ));
 
   
   
@@ -72,30 +73,26 @@ const ModelCard: React.FC<ModelCardProps> = ({
     }, []);
   };
 
-  if (reisAdvies.Reisadviezen.length > 0) {
-    const firstReisadvies = reisAdvies.Reisadviezen[0]; 
-    firstReisadvies.Segmenten.forEach(segment => {
-      const processedStations = processStations(segment.Stappen);
-      console.log(processedStations); 
-      segment.Stappen = processedStations;
-    });
+  const firstReisadvies = reisAdvies.Reisadviezen[0];
+  const maxSegmentDuur = Math.max(...firstReisadvies.Segmenten.map(segment => segment.SegmentDuur));
 
-  }
+  firstReisadvies.Segmenten.forEach(segment => {
+    const processedStations = processStations(segment.Stappen);
+    console.log(processedStations);
+    segment.Stappen = processedStations;
 
-  for (let reisadvies of reisAdvies.Reisadviezen) {
-    for (let segment of reisadvies.Segmenten) {
-      // Always push a new TrainBlock without checking for seenDurations
-      trainBlocks.push(
-          <TrainBlock
-              key={segment.SegmentId} // Use SegmentId for uniqueness
-              train={segment.TreinType}
-              SerieNaam={segment.SerieNaam}
-              duration={segment.SegmentDuur}
-              maxDuration={maxSegmentDuur} // Ensure maxDuration is calculated correctly outside the loops
-          />
-      );
-    }
-  }
+    // Add all segments from the first Reisadvies
+    trainBlocks.push(
+        <TrainBlock
+            key={segment.SegmentId}
+            train={segment.TreinType}
+            SerieNaam={segment.SerieNaam}
+            duration={segment.SegmentDuur}
+            maxDuration={maxSegmentDuur}
+        />
+    );
+  });
+  
 
 
   trainBlocks.forEach((block, index) => {
@@ -106,7 +103,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
       <div className="shadow-lg rounded-lg overflow-hidden border border-black bg-white mb-2">
         <div className="text-black p-2 flex justify-center items-center">
           <img src="/assets/clock.svg" className="w-4 h-6 mr-2" alt="Logo"/>
-          <span>{reisAdvies.ReisDuur}min</span>
+          <span>{durationString}</span>
           <TooltipComponent message="Reistijd!" position="right">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -191,7 +188,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
                 {/*<p className="tracking-wide"> Uurverdeling: <span className="font-medium"> {reisAdvies.UurPatroon} </span> </p>*/}
                 <p className="tracking-wide"> {reisAdvies.UurPatroon} </p>
 
-                <TooltipComponent message="Minuut van het uur wanneer er een trein aankomt" position="top">
+                <TooltipComponent message="Minuut van het uur wanneer er een trein vertrekt" position="top">
                   <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -243,6 +240,9 @@ const ModelCard: React.FC<ModelCardProps> = ({
                       const isLastSegment = index === reisAdvies.Reisadviezen[0].Segmenten.length - 1;
                       const uniqueStations = processStations(segment.Stappen);
                       console.log("tijd" + segment.StappenId)
+                      console.log("Overstaptijd" + segment.Overstaptijd)
+
+
                       return (
                           <React.Fragment key={segment.SegmentId}>
                             {index !== 0 && (
@@ -265,7 +265,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
                                         lineHeight: '12px',
                                       }}
                                   >
-                      5 min. overstap tijd
+                      {segment.Overstaptijd + " min overstaptijd"}
                     </span>
                                   <div className="flex-grow border-t border-red-950 border-dotted"></div>
                                 </div>

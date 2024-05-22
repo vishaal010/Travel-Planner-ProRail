@@ -93,7 +93,7 @@ export default function UploadButton({ onFilesUploaded }) {
 
     return (
         <>
-            <button onClick={toggleModal} className="btn btn-primary">Upload Dienstregelingen</button>
+            <button onClick={toggleModal} className="btn btn-primary">Upload Dienstregeling</button>
             <dialog id="uploadModal" className="modal">
                 <div className="modal-box">
                     <h3 className="font-bold text-lg mb-4">Upload hier je Dienstregeling</h3>
@@ -116,7 +116,7 @@ export default function UploadButton({ onFilesUploaded }) {
                             {fileNames[index] && fileNames[index].length > 0 && (
                                 <p className='font-roboto mb-4'>Geselecteerd bestand:
                                     <span className="font-bold"> {fileNames[index]}</span>
-                                    <button onClick={() => handleFileDelete(index)} className="ml-2 text-red-600">Delete</button>
+                                    <button onClick={() => handleFileDelete(index)} className="ml-2 text-red-600">Verwijder</button>
                                 </p>
                             )}
                             {!fileNames[index] && (

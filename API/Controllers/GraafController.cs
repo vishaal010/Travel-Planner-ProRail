@@ -4,7 +4,6 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using API.Services;
 using Domain;
 using Microsoft.AspNetCore.Http;
 
@@ -49,6 +48,7 @@ namespace API.Controllers
         public static List<string> UploadedFilePaths = new List<string>();
 
         [HttpPost("upload")]
+
         public async Task<IActionResult> Upload(List<IFormFile> files)
         {
             ClearGraafFolder();
@@ -86,7 +86,6 @@ namespace API.Controllers
                     responses.Add(new { fileName = file.FileName, error = ex.Message });
                 }
             }
-            ClearGraafFolder();
             return Ok(responses);
         }
 
@@ -96,13 +95,12 @@ namespace API.Controllers
             
             try
             {
-                List<string> jsonModels = new List<string>(); // Change to a list of strings
+                List<string> jsonModels = new List<string>(); 
                 foreach (var filePath in UploadedFilePaths)
                 {
                     string json = await _reisplannerService.GetModelAsync(van, naar, filePath, maxReisadviezen, bandBreedte);
                     jsonModels.Add(json);
                 }
-                // This will return an array of JSON strings representing each model
                 return Ok(jsonModels);
             }
             catch (Exception ex)
@@ -124,6 +122,9 @@ namespace API.Controllers
                 foreach (var filePath in UploadedFilePaths)
                 {
                     var stationNames = await _reisplannerService.GetStationNamesAsync(filePath);
+                    
+                    _logger.LogInformation("Successfully retrieved station names for filePath: {stationNames}", stationNames);
+
                     if (!allStationNames.ContainsKey(filePath))
                     {
                         allStationNames.Add(filePath, stationNames);

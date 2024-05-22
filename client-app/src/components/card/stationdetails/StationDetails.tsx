@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect, createRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+// import { motion, AnimatePresence } from 'framer-motion'
 
 type Station = {
   Station: string
   Spoor: string
   details?: string
-  Tijd?: string // Assuming 'travelTime' is 'reisTijd' in Dutch
-  hasIntermediateStations?: boolean // Assuming this is the translation for 'hasIntermediateStations'
-  stapType: string // Assuming 'stepType' translates to 'stapType'
+  Tijd?: string 
+  hasIntermediateStations?: boolean 
+  stapType: string 
   tijd: string
 }
 
