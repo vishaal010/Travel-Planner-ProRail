@@ -26,43 +26,38 @@ namespace API.Controllers
             _targetFolder = Path.Combine(_environment.ContentRootPath, "Graaf");
         }
         
-        private void ClearGraafFolder()
-        {
-            try
-            {
+// Clears the physical files from the server directory
+        private void ClearGraafFolder() {
+            try {
                 var directoryInfo = new DirectoryInfo(_targetFolder);
-                foreach (FileInfo file in directoryInfo.GetFiles())
-                {
+                foreach (FileInfo file in directoryInfo.GetFiles()) {
                     file.Delete();
                 }
-                _logger.LogInformation("All files in Graaf folder have been successfully deleted.");
-            }
-            catch (Exception ex)
-            {
+                _logger.LogInformation("All files in the Graaf folder have been successfully deleted.");
+            } catch (Exception ex) {
                 _logger.LogError(ex, "Failed to delete files in the Graaf folder.");
-                throw; 
+                throw;
             }
         }
 
-        // Static list to hold file paths for simplicity
+        public void ClearUploadedFiles() {
+            UploadedFilePaths.Clear();
+            _logger.LogInformation("Uploaded files list has been cleared.");
+        }
         public static List<string> UploadedFilePaths = new List<string>();
 
         [HttpPost("upload")]
+        public async Task<IActionResult> Upload(List<IFormFile> files) {
+            ClearGraafFolder(); // Make sure to clear previous files from the directory
+            UploadedFilePaths.Clear(); // Clear the static list of file paths
 
-        public async Task<IActionResult> Upload(List<IFormFile> files)
-        {
-            ClearGraafFolder();
-            if (files == null || files.Count == 0)
-            {
+            if (files == null || files.Count == 0) {
                 return BadRequest("No files uploaded.");
             }
 
             List<object> responses = new List<object>();
-
-            foreach (IFormFile file in files)
-            {
-                if (file.Length == 0)
-                {
+            foreach (IFormFile file in files) {
+                if (file.Length == 0) {
                     responses.Add(new { fileName = file.FileName, message = "File is empty." });
                     continue;
                 }
@@ -70,24 +65,21 @@ namespace API.Controllers
                 var filePath = Path.Combine(_targetFolder, file.FileName);
                 Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
-                try
-                {
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
+                try {
+                    using (var stream = new FileStream(filePath, FileMode.Create)) {
                         await file.CopyToAsync(stream);
                     }
                     UploadedFilePaths.Add(filePath);
-                    await _reisplannerService.PrepareGraphDataAsync(filePath); 
+                    await _reisplannerService.PrepareGraphDataAsync(filePath);
                     responses.Add(new { fileName = file.FileName, message = "File uploaded and processed successfully." });
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     _logger.LogError(ex, "Error uploading file {FileName}.", file.FileName);
                     responses.Add(new { fileName = file.FileName, error = ex.Message });
                 }
             }
             return Ok(responses);
         }
+
 
         [HttpGet("adviezen")]
         public async Task<IActionResult> GetAdviezen([FromQuery] string van, [FromQuery] string naar, [FromQuery] int maxReisadviezen, [FromQuery] int bandBreedte)
@@ -123,7 +115,7 @@ namespace API.Controllers
                 {
                     var stationNames = await _reisplannerService.GetStationNamesAsync(filePath);
                     
-                    _logger.LogInformation("Successfully retrieved station names for filePath: {stationNames}", stationNames);
+                    _logger.LogInformation("Successfully retrieved station names for StationNames: {stationNames}", stationNames);
 
                     if (!allStationNames.ContainsKey(filePath))
                     {

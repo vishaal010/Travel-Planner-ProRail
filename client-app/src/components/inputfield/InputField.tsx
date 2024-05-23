@@ -46,39 +46,43 @@ const InputField = ({ inputOne, setInputOne, inputTwo, setInputTwo }) => {
 
 
     useEffect(() => {
-        
-        fetch('http://localhost:5000/api/graaf/station-names')
-            .then(response => {
-                if (!response.ok) {
-                    response.text().then(text => {
-                        throw new Error(`Request failed: ${response.status} - ${text}`);
-                    });
+        const fetchStationNames = () => {
+            fetch('http://localhost:5000/api/graaf/station-names', {
+                headers: {
+                    'Cache-Control': 'no-cache' // This tells the browser not to cache the response
                 }
-                return response.json();
             })
-            .then(data => {
-                console.log(data)
-                const stationOptions = extractOptions(data);
-                setStationOptions(stationOptions);
-            })
-            .catch(error => {
-                console.error("Failed to fetch station names:", error);
-            });
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const stationOptions = extractOptions(data);
+                    setStationOptions(stationOptions);
+                })
+                .catch(error => {
+                    console.error("Failed to fetch station names:", error);
+                });
+        };
 
+        fetchStationNames();
     }, []);
 
-    // Function to extract station options from the fetched data
+
     const extractOptions = (data) => {
-        let options = [];
+        const uniqueOptions = new Map();
         for (const filePath in data) {
             if (Array.isArray(data[filePath])) {
                 data[filePath].forEach(station => {
-                    options.push({ value: station.key, label: station.value });
+                    if (!uniqueOptions.has(station.key)) {
+                        uniqueOptions.set(station.key, { value: station.key, label: station.value });
+                    }
                 });
             }
         }
-        options.sort((a, b) => a.label.localeCompare(b.label));
-        return options;
+        return Array.from(uniqueOptions.values()).sort((a, b) => a.label.localeCompare(b.label));
     };
 
     

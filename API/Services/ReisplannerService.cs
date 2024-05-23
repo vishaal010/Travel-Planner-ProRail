@@ -161,53 +161,45 @@ public class ReisplannerService : IReisplannerService
    
     public async Task<List<StationName>> GetStationNamesAsync(string filePath)
     {
-        List<StationName> stationNamesWithKeys = new List<StationName>();
-
-        bool shouldExecute = false;
-        lock (Lock)
+        // First, try to get station names from cache to avoid reloading if not necessary.
+        var cacheKey = $"StationNames_{filePath}";
+        if (!_cache.TryGetValue(cacheKey, out List<StationName> stationNames))
         {
-            if (!_isExecuted)
-            {
-                _isExecuted = true;
-                shouldExecute = true;
-            }
-        }
+            _logger.LogInformation("Cache miss. Loading station names from graph for: {FilePath}", filePath);
 
-        if (shouldExecute)
-        {
-            _logger.LogInformation("Invoked GetStationNamesAsync with filePath: {FilePath}", filePath);
-
+            // Check if the graph is already loaded; if not, load it.
             if (!_cache.TryGetValue(filePath, out ReisplannerGraaf graaf))
             {
+                if (!File.Exists(filePath))
+                {
+                    _logger.LogWarning("File not found: {FilePath}", filePath);
+                    return new List<StationName>();
+                }
+
                 graaf = await Task.Run(() => Utils.LeesGraaf(filePath));
-                _cache.Set(filePath, graaf, TimeSpan.FromHours(1));
-                _logger.LogInformation("Graph data loaded and cached for {FilePath}", filePath);
-            }
-            else
-            {
-                _logger.LogInformation("Graph data retrieved from cache for {FilePath}", filePath);
+                _cache.Set(filePath, graaf, new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromHours(1)));
             }
 
             if (graaf != null && graaf.StationVolledigeNamen != null)
             {
-                stationNamesWithKeys = graaf.StationVolledigeNamen
-                    .Select(kv => new StationName { Key = kv.Key, Value = kv.Value })
-                    .ToList();
-                _logger.LogInformation("Retrieved station names with keys: {StationNamesWithKeys}", stationNamesWithKeys);
+                stationNames = graaf.StationVolledigeNamen.Select(kv => new StationName { Key = kv.Key, Value = kv.Value }).ToList();
+                _cache.Set(cacheKey, stationNames, new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30)));
+                _logger.LogInformation("Station names loaded and cached for {FilePath}", filePath);
             }
             else
             {
                 _logger.LogWarning("No station names found or graaf object is null for {FilePath}", filePath);
+                stationNames = new List<StationName>();
             }
         }
         else
         {
-            _logger.LogInformation("Skipping execution as the function has already been executed.");
+            _logger.LogInformation("Cache hit. Retrieved station names from cache for {FilePath}", filePath);
         }
 
-        return stationNamesWithKeys;
+        return stationNames;
     }
-    
+
     public async Task PrepareGraphDataAsync(string filePath)
     {
         try
