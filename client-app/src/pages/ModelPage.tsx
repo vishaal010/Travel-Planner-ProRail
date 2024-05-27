@@ -99,7 +99,7 @@ export default function ModelPage({ uploadedFiles }) {
             <div className="flex flex-col md:flex-row justify-around w-full px-4 lg:px-12 mt-7 mb-8 gap-4">
               {modelData && modelData.map((model, index) => (
                   <CardContainer
-                      key={`model-${model.ModelId}`} // It's better to use ModelId if available
+                      key={`model-${model.ModelId}`} 
                       model={model}
                       isLoading={undefined}
                   />
