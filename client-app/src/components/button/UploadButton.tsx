@@ -84,7 +84,7 @@ export default function UploadButton({ onFilesUploaded }) {
     };
 
     const addInput = () => {
-        if (inputList.length < 2) {
+        if (inputList.length < 3) {
             setInputList([...inputList, '']);
             setFileNames([...fileNames, '']);
             setInputKeys([...inputKeys, Math.random().toString()]);
@@ -143,7 +143,7 @@ export default function UploadButton({ onFilesUploaded }) {
                         </button>
                     )}
                     <div className="modal-action">
-                        <button onClick={handleSubmit} className="btn btn-primary">Bekijk adviezen</button>
+                        <button onClick={handleSubmit} className="btn btn-primary">Start de Reisplanner</button>
                         <button onClick={toggleModal} className="btn">Sluiten</button>
                     </div>
                 </div>

@@ -109,7 +109,7 @@ const StationDetails: React.FC<StationDetailsProps> = ({stations, showIntermedia
                   ? 'Vertrek'
                   : index === displayedStations.length - 1
                   ? 'Aankomst'
-                  : 'Tussenstation'}
+                  : ''}
               </p>
             </div>
             <div className="text-xs">Spoor {station.Spoor}</div>

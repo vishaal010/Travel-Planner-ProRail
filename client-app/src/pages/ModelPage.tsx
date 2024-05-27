@@ -79,7 +79,7 @@ export default function ModelPage({ uploadedFiles }) {
         {showLottie && (
             <div className="text-center mx-auto mb-12">
               <h1 className="font-normal font-roboto-light mt-12 text-2xl md:text-3xl lg:text-3xl">
-                Modellen zijn ingeladen!
+                Dienstregelingen zijn ingeladen!
               </h1>
               <p className="font-extralight mt-2">
                 Om te <strong> Starten </strong> kiest u een <strong> Begin </strong> en <strong> Eindstation </strong>

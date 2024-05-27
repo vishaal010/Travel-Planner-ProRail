@@ -7,6 +7,6 @@ public interface IReisplannerService
     
     Task<List<StationName>> GetStationNamesAsync(string filePath);
     
-    void ClearCache(); 
-
+    void ClearCache();
+    bool AreStationsValid(string van, string naar);
 }

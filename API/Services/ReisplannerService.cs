@@ -11,7 +11,8 @@ public class ReisplannerService : IReisplannerService
     private Dictionary<string, ReisplannerGraaf> graphs = new Dictionary<string, ReisplannerGraaf>();
     private IMemoryCache _cache;
     private CancellationTokenSource _cacheTokenSource = new CancellationTokenSource();
-    
+    private List<string> graphCacheKeys = new List<string>(); // List to track graph keys
+
 
     public ReisplannerService(ILogger<ReisplannerService> logger,  IMemoryCache cache)
     {
@@ -25,133 +26,135 @@ public class ReisplannerService : IReisplannerService
         _cacheTokenSource.Cancel();
         
         _cacheTokenSource = new CancellationTokenSource();
+        
+        graphCacheKeys.Clear(); // Clear the keys list when the cache is cleared
+
 
         _logger.LogInformation("Cache cleared successfully.");
     }
 
     public void SetCache(string key, object value, TimeSpan duration)
     {
-        var options = new MemoryCacheEntryOptions()
-            .SetAbsoluteExpiration(duration)
-            .AddExpirationToken(new CancellationChangeToken(_cacheTokenSource.Token));
-
+        var options = new MemoryCacheEntryOptions().SetAbsoluteExpiration(duration).AddExpirationToken(new CancellationChangeToken(_cacheTokenSource.Token));
         _cache.Set(key, value, options);
+        if (!graphCacheKeys.Contains(key))
+            graphCacheKeys.Add(key); // Track the key
     }
 
     public async Task<string> GetModelAsync(string van, string naar, string filePath,int maxReisadviezen = 5, int bandbreedte = 20)
     {
          if (!_cache.TryGetValue(filePath, out ReisplannerGraaf graaf))
-        {
-            _logger.LogError("Graph data not found in cache for {FilePath}", filePath);
-            throw new InvalidOperationException("Graph data not found.");
-        }
-        var reisplanner = new Planner(graaf);
-        var model = new Model(); 
+         {
+             _logger.LogError("Graph data not found in cache for {FilePath}", filePath);
+             throw new InvalidOperationException("Graph data not found.");
+         }
+         var reisplanner = new Planner(graaf);
+         var model = new Model(); 
 
 
-        var fileName = Path.GetFileNameWithoutExtension(filePath);
-        model.ModelNaam = fileName;
+         var fileName = Path.GetFileNameWithoutExtension(filePath);
+         model.ModelNaam = fileName;
         
 
-        var aanvraag = new ReisadviesAanvraag
-        {
-            Van = van,
-            Naar = naar,
-            MaxReisadviezen = maxReisadviezen   ,
-            Bandbreedte = bandbreedte
-        };
+         var aanvraag = new ReisadviesAanvraag
+         {
+             Van = van,
+             Naar = naar,
+             MaxReisadviezen = maxReisadviezen   ,
+             Bandbreedte = bandbreedte
+         };
 
-        _logger.LogInformation($"ReisadviesAanvraag created for Van: {van} to Naar: {naar}");
+         _logger.LogInformation($"ReisadviesAanvraag created for Van: {van} to Naar: {naar}");
 
-        var instellingen = new Instellingen
-        {
-            LogAanvraagInfo = true,
-            LogPlanningStatistieken = true,
-            LogGraafInfo = true,
-            LogTussenStops = false,
-            LogResultaten = true,
-        };
+         var instellingen = new Instellingen
+         {
+             LogAanvraagInfo = true,
+             LogPlanningStatistieken = true,
+             LogGraafInfo = true,
+             LogTussenStops = false,
+             LogResultaten = true,
+         };
         
 
-        var adviezen = reisplanner.GeefReisAdviezen(aanvraag, instellingen);
-        model.Data.AddRange(adviezen);
+         var adviezen = reisplanner.GeefReisAdviezen(aanvraag, instellingen);
+         model.Data.AddRange(adviezen);
 
-        var indentOptions = new JsonSerializerOptions() { WriteIndented = true };
+         var indentOptions = new JsonSerializerOptions() { WriteIndented = true };
 
-        var jsonifyModel = JsonSerializer.Serialize(model, indentOptions);
-        _logger.LogInformation("Serialized Model: {JsonifyModel}", jsonifyModel);
+         var jsonifyModel = JsonSerializer.Serialize(model, indentOptions);
+         _logger.LogInformation("Serialized Model: {JsonifyModel}", jsonifyModel);
 
-        var node = JsonNode.Parse(jsonifyModel);
-        _logger.LogInformation("JsonNode contents: {NodeJson}", node.ToJsonString());
+         var node = JsonNode.Parse(jsonifyModel);
+         _logger.LogInformation("JsonNode contents: {NodeJson}", node.ToJsonString());
 
-        int reisAdviesCounter = 0;
-        int stapCounter = 0; 
+         int reisAdviesCounter = 0;
+         int stapCounter = 0; 
 
-       foreach (var reisAdviesNode in node["Data"].AsArray())
-       {
-           reisAdviesNode["ReisadviesId"] = Guid.NewGuid().ToString();
+         foreach (var reisAdviesNode in node["Data"].AsArray())
+         {
+             reisAdviesNode["ReisadviesId"] = Guid.NewGuid().ToString();
     
 
-           foreach (var segmentNode in reisAdviesNode["Reisadviezen"].AsArray())
-           {
-               segmentNode["SegmentId"] = $"SegmentId_{reisAdviesCounter++}";
+             foreach (var segmentNode in reisAdviesNode["Reisadviezen"].AsArray())
+             {
+                 segmentNode["SegmentId"] = $"SegmentId_{reisAdviesCounter++}";
 
-               var stappenArray = segmentNode["Segmenten"].AsArray();
-               string lastStation = null, lastTrack = null;
-               for (int i = 0; i < stappenArray.Count; i++)
-               {
-                   var stapNode = stappenArray[i];
-                   stapNode["StappenId"] = $"StappenId_{stapCounter++}";
+                 var stappenArray = segmentNode["Segmenten"].AsArray();
+                 string lastStation = null, lastTrack = null;
+                 for (int i = 0; i < stappenArray.Count; i++)
+                 {
+                     var stapNode = stappenArray[i];
+                     stapNode["StappenId"] = $"StappenId_{stapCounter++}";
 
-                   if (i > 0 && lastStation != null)
-                   {
-                       var currentStapNode = stappenArray[i]["Stappen"].AsArray()[0]; 
-                       var currentStation = (string)currentStapNode["Station"];
-                       var currentTrack = (string)currentStapNode["Spoor"];
+                     if (i > 0 && lastStation != null)
+                     {
+                         var currentStapNode = stappenArray[i]["Stappen"].AsArray()[0]; 
+                         var currentStation = (string)currentStapNode["Station"];
+                         var currentTrack = (string)currentStapNode["Spoor"];
 
                   
-                       if (lastStation == currentStation)
-                       {
-                           var overstaptijdInSeconds = graaf.MinOverstaptijden[new(lastStation, lastTrack, currentTrack)];
-                           var overstaptijdInMinutes = overstaptijdInSeconds / 60; // Convert seconds to minutes
-                           stapNode["Overstaptijd"] = overstaptijdInMinutes;
-                           _logger.LogInformation($"Calculated overstaptijd: {overstaptijdInMinutes} minutes between track {lastTrack} and {currentTrack} at {lastStation}");
-                       }
-                   }
+                         if (lastStation == currentStation)
+                         {
+                             var overstaptijdInSeconds = graaf.MinOverstaptijden[new(lastStation, lastTrack, currentTrack)];
+                             var overstaptijdInMinutes = overstaptijdInSeconds / 60; // Convert seconds to minutes
+                             stapNode["Overstaptijd"] = overstaptijdInMinutes;
+                             _logger.LogInformation($"Calculated overstaptijd: {overstaptijdInMinutes} minutes between track {lastTrack} and {currentTrack} at {lastStation}");
+                         }
+                     }
 
-                   var lastStep = stapNode["Stappen"].AsArray().Last();
-                   lastStation = (string)lastStep["Station"];
-                   lastTrack = (string)lastStep["Spoor"];
+                     var lastStep = stapNode["Stappen"].AsArray().Last();
+                     lastStation = (string)lastStep["Station"];
+                     lastTrack = (string)lastStep["Spoor"];
 
-                   foreach (var step in stapNode["Stappen"].AsArray())
-                   {
-                       var station = (string)step["Station"];
-                       if (graaf.StationVolledigeNamen.ContainsKey(station))
-                       {
-                           var updatedStationName = graaf.StationVolledigeNamen[station];
-                           step["Station"] = updatedStationName;
-                           _logger.LogInformation("Updated Station Name from {OriginalStationName} to {UpdatedStationName}", station, updatedStationName);
-                       }
-                       else
-                       {
-                           _logger.LogInformation("Station name not found in dictionary: {StationName}", station);
-                       }
-                   }
+                     foreach (var step in stapNode["Stappen"].AsArray())
+                     {
+                         var station = (string)step["Station"];
+                         if (graaf.StationVolledigeNamen.ContainsKey(station))
+                         {
+                             var updatedStationName = graaf.StationVolledigeNamen[station];
+                             step["Station"] = updatedStationName;
+                             _logger.LogInformation("Updated Station Name from {OriginalStationName} to {UpdatedStationName}", station, updatedStationName);
+                         }
+                         else
+                         {
+                             _logger.LogInformation("Station name not found in dictionary: {StationName}", station);
+                         }
+                     }
 
-                   _logger.LogInformation($"Last station updated to {lastStation}, track {lastTrack}");
-               } 
-           }
-       }
+                     _logger.LogInformation($"Last station updated to {lastStation}, track {lastTrack}");
+                 } 
+             }
+         }
 
 
-        _logger.LogInformation("Modified Reisadviezen in JSON with unique SegmentIds.");
+         _logger.LogInformation("Modified Reisadviezen in JSON with unique SegmentIds.");
 
-        _logger.LogInformation("Modified Reisadviezen in JSON with SegmentIds.");
+         _logger.LogInformation("Modified Reisadviezen in JSON with SegmentIds.");
 
-        var modifiedJson = node.ToJsonString();
-        _logger.LogInformation("Serialized Modified Model: {ModifiedJson}", modifiedJson);
+         var modifiedJson = node.ToJsonString();
+         _logger.LogInformation("Serialized Modified Model: {ModifiedJson}", modifiedJson);
 
-        return modifiedJson;
+         return modifiedJson;
     }
     
     private static bool _isExecuted = false;
@@ -222,6 +225,21 @@ public class ReisplannerService : IReisplannerService
             _logger.LogError(ex, "Failed to load graph data from {FilePath}", filePath);
             throw;  
         }
+    }
+    
+    public bool AreStationsValid(string van, string naar)
+    {
+        foreach (var key in graphCacheKeys)
+        {
+            if (_cache.TryGetValue(key, out ReisplannerGraaf graaf))
+            {
+                if (!graaf.StationVolledigeNamen.ContainsKey(van) || !graaf.StationVolledigeNamen.ContainsKey(naar))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     

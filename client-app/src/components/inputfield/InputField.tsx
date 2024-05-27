@@ -49,7 +49,7 @@ const InputField = ({ inputOne, setInputOne, inputTwo, setInputTwo }) => {
         const fetchStationNames = () => {
             fetch('http://localhost:5000/api/graaf/station-names', {
                 headers: {
-                    'Cache-Control': 'no-cache' // This tells the browser not to cache the response
+                    'Cache-Control': 'no-cache' 
                 }
             })
                 .then(response => {

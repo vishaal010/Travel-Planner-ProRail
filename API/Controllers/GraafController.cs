@@ -84,21 +84,26 @@ namespace API.Controllers
         [HttpGet("adviezen")]
         public async Task<IActionResult> GetAdviezen([FromQuery] string van, [FromQuery] string naar, [FromQuery] int maxReisadviezen, [FromQuery] int bandBreedte)
         {
-            
             try
             {
+                if (!_reisplannerService.AreStationsValid(van, naar))
+                {
+                    return BadRequest("One or both of the selected stations are not valid for the combined files.");
+                }
+
                 List<string> jsonModels = new List<string>(); 
                 foreach (var filePath in UploadedFilePaths)
                 {
                     string json = await _reisplannerService.GetModelAsync(van, naar, filePath, maxReisadviezen, bandBreedte);
                     jsonModels.Add(json);
                 }
+
                 return Ok(jsonModels);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while fetching data");
-                return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
+                _logger.LogError(ex, "An error occurred while fetching travel advice");
+                return StatusCode(500, new { error = ex.Message });
             }
         }
 
