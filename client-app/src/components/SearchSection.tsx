@@ -102,12 +102,12 @@ const SearchSection = ({ onSearchInitiated }) => {
             <hr className="border-white" />
           </div>
           <div className="flex items-center mb-4 mt-2 cursor-pointer" onClick={toggleAdvancedOptions}>
-            {/*<h2 className="text-white text-lg font-roboto underline-effect mb-0">Geavanceerde Opties</h2>*/}
-            {/*<img*/}
-            {/*    src="/assets/white_arrow.svg"*/}
-            {/*    className={`ml-2 w-4 h-4 transform transition-transform duration-300 ${showAdvancedOptions ? 'rotate-180' : ''}`}*/}
-            {/*    alt="toggle arrow"*/}
-            {/*/>*/}
+            <h2 className="text-white text-lg font-roboto underline-effect mb-0">Geavanceerde Opties</h2>
+            <img
+                src="/assets/white_arrow.svg"
+                className={`ml-2 w-4 h-4 transform transition-transform duration-300 ${showAdvancedOptions ? 'rotate-180' : ''}`}
+                alt="toggle arrow"
+            />
           </div>
           {showAdvancedOptions && (
               <div className="flex flex-wrap gap-4 my-4">

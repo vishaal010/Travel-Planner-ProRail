@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, {useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 
-export default function UploadButton({ onFilesUploaded }) {
+export default function UploadButton({onFilesUploaded}) {
     const [inputList, setInputList] = useState<(File | string)[]>(['']);
     const navigate = useNavigate();
     const [fileNames, setFileNames] = useState<string[]>([]);
-    const [errorMessage, setErrorMessage] = useState(''); // Error state
+    const [errorMessage, setErrorMessage] = useState('');
     const [inputKeys, setInputKeys] = useState<string[]>(['']);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
@@ -102,7 +102,8 @@ export default function UploadButton({ onFilesUploaded }) {
                     </p>
                     {errorMessage && ( // Alert for error message
                         <div role="alert" className="flex items-center bg-red-200 text-red-800 p-3 rounded-md mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6 mr-2" fill="none"
+                            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6 mr-2"
+                                 fill="none"
                                  viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                                       d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -116,7 +117,9 @@ export default function UploadButton({ onFilesUploaded }) {
                             {fileNames[index] && fileNames[index].length > 0 && (
                                 <p className='font-roboto mb-4'>Geselecteerd bestand:
                                     <span className="font-bold"> {fileNames[index]}</span>
-                                    <button onClick={() => handleFileDelete(index)} className="ml-2 text-red-600">Verwijder</button>
+                                    <button onClick={() => handleFileDelete(index)}
+                                            className="ml-2 text-red-600">Verwijder
+                                    </button>
                                 </p>
                             )}
                             {!fileNames[index] && (
@@ -129,10 +132,10 @@ export default function UploadButton({ onFilesUploaded }) {
                                     />
                                 </div>
                             )}
-                            {index < inputList.length - 1 && <hr className="my-4" />}
+                            {index < inputList.length - 1 && <hr className="my-4"/>}
                         </React.Fragment>
                     ))}
-                    {inputList.length < 2 && (
+                    {inputList.length < 3 && (
                         <button onClick={addInput} className="btn btn-primary btn-square absolute right-2 top-2">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
