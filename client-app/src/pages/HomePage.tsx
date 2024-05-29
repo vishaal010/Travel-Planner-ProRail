@@ -2,10 +2,8 @@ import React, { useState } from 'react'
 import GuidePlan from '../components/GuidePlan'
 import HomeHero from '../components/heroes/HomeHero'
 import { motion } from 'framer-motion'
-import { Activity } from '../test-data/activities/models/activity'
 
 interface HomePageProps {
-  activities: Activity[]
   onFilesUploaded: (files: File[]) => void // Declare the type of the onFilesUploaded prop
 }
 
@@ -32,7 +30,7 @@ const childVariants = {
 
 // HomePage component
 // HomePage component
-const   HomePage: React.FC<HomePageProps> = ({ activities, onFilesUploaded }) => {
+const   HomePage: React.FC<HomePageProps> = ({onFilesUploaded }) => {
   const [guidePlanVisible, setGuidePlanVisible] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
 

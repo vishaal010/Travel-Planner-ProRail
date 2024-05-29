@@ -1,5 +1,6 @@
 import UploadButton from '../button/UploadButton'
 
+// @ts-ignore
 export default function HomeHero({ onFilesUploaded }) {
   // const handleButtonClick = () => {
   //     // Button click logic
@@ -16,7 +17,7 @@ export default function HomeHero({ onFilesUploaded }) {
         style={{ height: '350px' }}
       >
         <h1 className="text-lg sm:text-4xl md:text-4xl lg:text-5xl xl:text-4xl font-bold text-white mb-6">
-          Digitale Reisplanner
+          Reisplanner
         </h1>
         <UploadButton onFilesUploaded={onFilesUploaded} />
       </div>

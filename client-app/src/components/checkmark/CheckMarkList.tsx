@@ -1,6 +1,6 @@
 export default function CheckmarkList() {
     const items = [
-        { text: 'Vergelijk dienstregelingsmodellen Met de modellen van DONS', checked: true },
+        { text: 'Vergelijk dienstregelingsmodel(len) Met de modellen van DONS', checked: true },
         { text: 'Complexe Algoritmes Voor optimale resultaten', checked: true },
         { text: 'Gebruiksvriendelijke interface Ontworpen voor eenvoudig gebruik', checked: true },
         // Add more items here

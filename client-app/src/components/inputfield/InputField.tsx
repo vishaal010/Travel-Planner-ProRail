@@ -46,36 +46,43 @@ const InputField = ({ inputOne, setInputOne, inputTwo, setInputTwo }) => {
 
 
     useEffect(() => {
-        // Fetch station names from your backend or a local source
-        fetch('http://localhost:5000/api/graaf/station-names')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+        const fetchStationNames = () => {
+            fetch('http://localhost:5000/api/graaf/station-names', {
+                headers: {
+                    'Cache-Control': 'no-cache' 
                 }
-                return response.json();
             })
-            .then(data => {
-                console.log("Fetched station names:", data); // Log the raw data received
-                const stationOptions = extractOptions(data);
-                console.log("Fetched updated names:", stationOptions); // Log the updated options
-                setStationOptions(stationOptions);
-            })
-            .catch(error => {
-                console.error("Failed to fetch station names:", error);
-            });
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const stationOptions = extractOptions(data);
+                    setStationOptions(stationOptions);
+                })
+                .catch(error => {
+                    console.error("Failed to fetch station names:", error);
+                });
+        };
+
+        fetchStationNames();
     }, []);
 
-    // Function to extract station options from the fetched data
+
     const extractOptions = (data) => {
-        let options = [];
+        const uniqueOptions = new Map();
         for (const filePath in data) {
             if (Array.isArray(data[filePath])) {
                 data[filePath].forEach(station => {
-                    options.push({ value: station.key, label: station.value });
+                    if (!uniqueOptions.has(station.key)) {
+                        uniqueOptions.set(station.key, { value: station.key, label: station.value });
+                    }
                 });
             }
         }
-        return options;
+        return Array.from(uniqueOptions.values()).sort((a, b) => a.label.localeCompare(b.label));
     };
 
     

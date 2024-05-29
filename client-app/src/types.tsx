@@ -6,8 +6,10 @@ export enum StapType {
 export interface Stappen {
   stapType: StapType;
   Station: string;
-  Tijd?: string; // Optional for intermediate stops
+  Tijd?: string; 
   Spoor: string;
+  Overstaptijd:string;
+  Wandeltijd:string;
 }
 
 export interface Segment {
@@ -16,8 +18,8 @@ export interface Segment {
   TreinType: string;
   treinId: string;
   serieNaam: string;
-  Bestemming: string; // Assuming this is a property based on your JSON
-  bestemmingAfkorting: string; // Assuming this is a property based on your JSON
+  Bestemming: string; 
+  bestemmingAfkorting: string; 
   Stappen: Stappen[];
 }
 
@@ -26,12 +28,12 @@ export interface ReisAdviezen {
   UurPatroon: string;
   Frequentie: number;
   AantalOverstappen: number;
-  reisadviesId: string; // Make sure the ID field name matches your JSON
+  reisadviesId: string; 
   segmenten: Segment[];
 }
 
 export interface ModelData {
   ModelId: string;
   ModelNaam: string;
-  Data: ReisAdviezen[]; // This should match the key in your JSON that contains the array of ReisAdvies
+  Data: ReisAdviezen[];
 }

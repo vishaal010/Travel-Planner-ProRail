@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect, createRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+// import { motion, AnimatePresence } from 'framer-motion'
 
 type Station = {
   Station: string
   Spoor: string
   details?: string
-  Tijd?: string // Assuming 'travelTime' is 'reisTijd' in Dutch
-  hasIntermediateStations?: boolean // Assuming this is the translation for 'hasIntermediateStations'
-  stapType: string // Assuming 'stepType' translates to 'stapType'
+  Tijd?: string 
+  hasIntermediateStations?: boolean 
+  stapType: string 
   tijd: string
 }
 
@@ -109,7 +109,7 @@ const StationDetails: React.FC<StationDetailsProps> = ({stations, showIntermedia
                   ? 'Vertrek'
                   : index === displayedStations.length - 1
                   ? 'Aankomst'
-                  : 'Tussenstation'}
+                  : ''}
               </p>
             </div>
             <div className="text-xs">Spoor {station.Spoor}</div>
@@ -135,7 +135,7 @@ const StationDetails: React.FC<StationDetailsProps> = ({stations, showIntermedia
                   onClick={toggleIntermediateStations}
                 >
                   <img
-                    src="/assets/arrow_up.svg"
+                    src="/assets/arrow_down.svg"
                     alt="Toggle Details"
                     className={`ml-2 transition-transform duration-500 ${
                       showIntermediateStations ? 'rotate-180' : ''

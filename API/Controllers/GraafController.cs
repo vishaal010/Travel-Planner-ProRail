@@ -4,7 +4,6 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using API.Services;
 using Domain;
 using Microsoft.AspNetCore.Http;
 
@@ -26,24 +25,39 @@ namespace API.Controllers
             _reisplannerService = reisplannerService;
             _targetFolder = Path.Combine(_environment.ContentRootPath, "Graaf");
         }
+        
+// Clears the physical files from the server directory
+        private void ClearGraafFolder() {
+            try {
+                var directoryInfo = new DirectoryInfo(_targetFolder);
+                foreach (FileInfo file in directoryInfo.GetFiles()) {
+                    file.Delete();
+                }
+                _logger.LogInformation("All files in the Graaf folder have been successfully deleted.");
+            } catch (Exception ex) {
+                _logger.LogError(ex, "Failed to delete files in the Graaf folder.");
+                throw;
+            }
+        }
 
-        // Static list to hold file paths for simplicity
+        public void ClearUploadedFiles() {
+            UploadedFilePaths.Clear();
+            _logger.LogInformation("Uploaded files list has been cleared.");
+        }
         public static List<string> UploadedFilePaths = new List<string>();
 
         [HttpPost("upload")]
-        public async Task<IActionResult> Upload(List<IFormFile> files)
-        {
-            if (files == null || files.Count == 0)
-            {
+        public async Task<IActionResult> Upload(List<IFormFile> files) {
+            ClearGraafFolder(); // Make sure to clear previous files from the directory
+            UploadedFilePaths.Clear(); // Clear the static list of file paths
+
+            if (files == null || files.Count == 0) {
                 return BadRequest("No files uploaded.");
             }
 
             List<object> responses = new List<object>();
-
-            foreach (IFormFile file in files)
-            {
-                if (file.Length == 0)
-                {
+            foreach (IFormFile file in files) {
+                if (file.Length == 0) {
                     responses.Add(new { fileName = file.FileName, message = "File is empty." });
                     continue;
                 }
@@ -51,46 +65,45 @@ namespace API.Controllers
                 var filePath = Path.Combine(_targetFolder, file.FileName);
                 Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
-                try
-                {
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
+                try {
+                    using (var stream = new FileStream(filePath, FileMode.Create)) {
                         await file.CopyToAsync(stream);
                     }
-                    // Save the path in the static list or a more persistent storage
                     UploadedFilePaths.Add(filePath);
-                    await _reisplannerService.PrepareGraphDataAsync(filePath); // Optionally prepare data immediately
+                    await _reisplannerService.PrepareGraphDataAsync(filePath);
                     responses.Add(new { fileName = file.FileName, message = "File uploaded and processed successfully." });
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     _logger.LogError(ex, "Error uploading file {FileName}.", file.FileName);
                     responses.Add(new { fileName = file.FileName, error = ex.Message });
                 }
             }
-
             return Ok(responses);
         }
 
+
         [HttpGet("adviezen")]
-        public async Task<IActionResult> GetAdviezen([FromQuery] string van, [FromQuery] string naar)
+        public async Task<IActionResult> GetAdviezen([FromQuery] string van, [FromQuery] string naar, [FromQuery] int maxReisadviezen, [FromQuery] int bandBreedte)
         {
-            
             try
             {
-                List<string> jsonModels = new List<string>(); // Change to a list of strings
+                if (!_reisplannerService.AreStationsValid(van, naar))
+                {
+                    return BadRequest("One or both of the selected stations are not valid for the combined files.");
+                }
+
+                List<string> jsonModels = new List<string>(); 
                 foreach (var filePath in UploadedFilePaths)
                 {
-                    string json = await _reisplannerService.GetModelAsync(van, naar, filePath);
+                    string json = await _reisplannerService.GetModelAsync(van, naar, filePath, maxReisadviezen, bandBreedte);
                     jsonModels.Add(json);
                 }
-                // This will return an array of JSON strings representing each model
+
                 return Ok(jsonModels);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while fetching data");
-                return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
+                _logger.LogError(ex, "An error occurred while fetching travel advice");
+                return StatusCode(500, new { error = ex.Message });
             }
         }
 
@@ -106,9 +119,21 @@ namespace API.Controllers
                 foreach (var filePath in UploadedFilePaths)
                 {
                     var stationNames = await _reisplannerService.GetStationNamesAsync(filePath);
-                    allStationNames.Add(filePath, stationNames);
-                    _logger.LogInformation("Successfully retrieved station names for filePath: {FilePath}", filePath);
+                    
+                    _logger.LogInformation("Successfully retrieved station names for StationNames: {stationNames}", stationNames);
+
+                    if (!allStationNames.ContainsKey(filePath))
+                    {
+                        allStationNames.Add(filePath, stationNames);
+                        _logger.LogInformation("Successfully retrieved station names for filePath: {FilePath}", filePath);
+                    }
+                    else
+                    {
+                        // Handle the case where the key already exists, e.g., update or log a message.
+                        _logger.LogWarning("Skipping duplicate file path: {FilePath}", filePath);
+                    }
                 }
+
 
                 return Ok(allStationNames);
             }
