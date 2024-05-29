@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ModelCard from './ModelCard';
 
+// @ts-ignore
 const CardContainer = ({ model, isLoading }) => {
   const [modelData, setModelData] = useState(null);
   const [showDetailsArray, setShowDetailsArray] = useState([]);
@@ -44,14 +45,12 @@ const CardContainer = ({ model, isLoading }) => {
       <div className="flex flex-col rounded mx-auto w-full max-w-xl">
         <div className="bg-gray-850 p-1">
           {modelData && (
-              <h2 className="text-center text-base font-[Roboto] font-light">
+              <h2 className="text-center text-base font-[Roboto]">
                  {modelData.ModelNaam}
               </h2>
           )}
         </div>
         <hr className="my-0" />
-        {/* Temporarily disable ModelCard rendering */}
-        {/* Access the first item of Data and then map over its Reisadviezen */}
         {
             modelData && modelData.Data && modelData.Data.map((advies, index) => (
                 <ModelCard

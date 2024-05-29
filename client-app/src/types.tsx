@@ -9,6 +9,7 @@ export interface Stappen {
   Tijd?: string; 
   Spoor: string;
   Overstaptijd:string;
+  Wandeltijd:string;
 }
 
 export interface Segment {

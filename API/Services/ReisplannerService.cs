@@ -88,83 +88,82 @@ public class ReisplannerService : IReisplannerService
          _logger.LogInformation("JsonNode contents: {NodeJson}", node.ToJsonString());
 
          int reisAdviesCounter = 0;
-int stapCounter = 0;
-string lastStation = null, lastTrack = null;
-int lastTime = 0; // Assuming time is managed as an integer for simplicity
+         int stapCounter = 0;
+         string lastStation = null, lastTrack = null;
+         int lastTime = 0; 
 
-foreach (var reisAdviesNode in node["Data"].AsArray())
-{
-    reisAdviesNode["ReisadviesId"] = Guid.NewGuid().ToString();
-
-    foreach (var segmentNode in reisAdviesNode["Reisadviezen"].AsArray())
-    {
-        segmentNode["SegmentId"] = $"SegmentId_{reisAdviesCounter++}";
-
-        var stappenArray = segmentNode["Segmenten"].AsArray();
-        for (int i = 0; i < stappenArray.Count; i++)
-        {
-            var stapNode = stappenArray[i];
-            stapNode["StappenId"] = $"StappenId_{stapCounter++}";
-
-            var steps = stapNode["Stappen"].AsArray();
-            if (i > 0 && lastStation != null)
+            foreach (var reisAdviesNode in node["Data"].AsArray())
             {
-                var currentStapNode = steps[0];  // First step of current segment
-                var currentStation = (string)currentStapNode["Station"];
-                var currentTrack = (string)currentStapNode["Spoor"];
-                int currentTime = int.Parse(currentStapNode["Tijd"].ToString());
+                reisAdviesNode["ReisadviesId"] = Guid.NewGuid().ToString();
 
-                if (currentTime < lastTime) {  // Handle clock rollover
-                    currentTime += 60;
-                }
-                int transferTime = currentTime - lastTime;
-                stapNode["Overstaptijd"] = transferTime;  // Calculate the actual transfer time between steps
-
-                // Ensuring it's the same station for a valid transfer time calculation
-                if (lastStation == currentStation)
+                foreach (var segmentNode in reisAdviesNode["Reisadviezen"].AsArray())
                 {
-                    if (lastStation == currentStation)
+                    segmentNode["SegmentId"] = $"SegmentId_{reisAdviesCounter++}";
+
+                    var stappenArray = segmentNode["Segmenten"].AsArray();
+                    for (int i = 0; i < stappenArray.Count; i++)
                     {
-                        var overstaptijdInSeconds = graaf.MinOverstaptijden[new(lastStation, lastTrack, currentTrack)];
-                        var overstaptijdInMinutes = overstaptijdInSeconds / 60; // Convert seconds to minutes
-                        stapNode["Wandeltijd"] = overstaptijdInMinutes;
-                        _logger.LogInformation($"Calculated overstaptijd: {overstaptijdInMinutes} minutes between track {lastTrack} and {currentTrack} at {lastStation}");
+                        var stapNode = stappenArray[i];
+                        stapNode["StappenId"] = $"StappenId_{stapCounter++}";
+
+                        var steps = stapNode["Stappen"].AsArray();
+                        if (i > 0 && lastStation != null)
+                        {
+                            var currentStapNode = steps[0]; 
+                            var currentStation = (string)currentStapNode["Station"];
+                            var currentTrack = (string)currentStapNode["Spoor"];
+                            int currentTime = int.Parse(currentStapNode["Tijd"].ToString());
+                
+                            _logger.LogInformation("currentStation: {currentStation}", currentStation);
+                            _logger.LogInformation("currentTrack: {currentTrack}", currentTrack);
+                            _logger.LogInformation("lastTrack: {lastTrack}", lastTrack);
+
+                            if (currentTime < lastTime) {  
+                                currentTime += 60;
+                            }
+                            int transferTime = currentTime - lastTime;
+                            stapNode["Overstaptijd"] = transferTime; 
+                
+                            if (lastStation == currentStation)
+                            {
+                                var wandeltijdInSeconds = graaf.MinOverstaptijden[new(lastStation, lastTrack, currentTrack)];
+                                var wandeltijdInMinutes = wandeltijdInSeconds / 60; 
+                                stapNode["Wandeltijd"] = wandeltijdInMinutes;
+                                _logger.LogInformation($"Calculated wandeltijd: {wandeltijdInMinutes} minutes between track {lastTrack} and {currentTrack} at {lastStation}");
+                            }
+                        }
+                        
+                        var lastStep = steps.Last();
+                        lastStation = (string)lastStep["Station"];
+                        lastTrack = (string)lastStep["Spoor"];
+                        lastTime = int.Parse(lastStep["Tijd"].ToString());
+                        _logger.LogInformation("lastStation: {lastStation}", lastStation);
+                        _logger.LogInformation("lastTrack: {lastTrack}", lastTrack);
+            
+                        foreach (var step in steps)
+                        {
+                            var station = (string)step["Station"];
+                            if (graaf.StationVolledigeNamen.ContainsKey(station))
+                            {
+                                var updatedStationName = graaf.StationVolledigeNamen[station];
+                                step["Station"] = updatedStationName;
+                                _logger.LogInformation("Updated Station Name from {OriginalStationName} to {UpdatedStationName}", station, updatedStationName);
+                            }
+                            else
+                            {
+                                _logger.LogInformation("Station name not found in dictionary: {StationName}", station);
+                            }
+                        }
                     }
                 }
             }
-            
-            foreach (var step in steps)
-            {
-                var station = (string)step["Station"];
-                if (graaf.StationVolledigeNamen.ContainsKey(station))
-                {
-                    var updatedStationName = graaf.StationVolledigeNamen[station];
-                    step["Station"] = updatedStationName;
-                    _logger.LogInformation("Updated Station Name from {OriginalStationName} to {UpdatedStationName}", station, updatedStationName);
-                }
-                else
-                {
-                    _logger.LogInformation("Station name not found in dictionary: {StationName}", station);
-                }
-            }
 
+            _logger.LogInformation("Modified Reisadviezen in JSON with unique SegmentIds.");
+            _logger.LogInformation("Modified Reisadviezen in JSON with SegmentIds.");
+            var modifiedJson = node.ToJsonString();
+            _logger.LogInformation("Serialized Modified Model: {ModifiedJson}", modifiedJson);
 
-
-            // Update lastStation, lastTrack, and lastTime to current segment's last step for the next iteration
-            var lastStep = steps.Last();
-            lastStation = (string)lastStep["Station"];
-            lastTrack = (string)lastStep["Spoor"];
-            lastTime = int.Parse(lastStep["Tijd"].ToString());
-        }
-    }
-}
-
-       _logger.LogInformation("Modified Reisadviezen in JSON with unique SegmentIds.");
-       _logger.LogInformation("Modified Reisadviezen in JSON with SegmentIds.");
-       var modifiedJson = node.ToJsonString();
-       _logger.LogInformation("Serialized Modified Model: {ModifiedJson}", modifiedJson);
-
-       return modifiedJson;
+            return modifiedJson;
 }
     
     private static bool _isExecuted = false;

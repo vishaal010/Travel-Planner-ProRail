@@ -27,7 +27,7 @@ export default function GuidePlan() {
     {
       id: 2,
       title:
-        'Voer twee stations in en ons algoritme berekent de kortste en alternatieve routes.',
+        'Voer twee stations in en ons reisplanner berekent de kortste en alternatieve routes.',
       icon: 'assets/step2.png',
     },
     {
@@ -43,8 +43,8 @@ export default function GuidePlan() {
           De Dienstregeling van de Toekomst Begint Nu
         </h2>
         <p className="text-center font-medium text-gray-600 mb-12 font-roboto max-w-md mx-auto">
-          Toon je reis moeiteloos met onze geavanceerde digitale reisplanner. Upload dienstregelingen en
-            ontvang diverse reisadviezen om je dienstregelingen keurig te vergelijken.
+          Toon je reis met onze reisplanner. Upload dienstregelingen en
+            ontvang reisadviezen om je dienstregelingen te vergelijken.
           </p>
         {/*<TrainAnimation/>*/}
         <hr className="w-full"/>

@@ -93,11 +93,6 @@ const ModelCard: React.FC<ModelCardProps> = ({
     );
   });
   
-
-
-  trainBlocks.forEach((block, index) => {
-    console.log(`Trainblock ${index}:`, block);
-  });
   
   return (
       <div className="shadow-lg rounded-lg overflow-hidden border border-black bg-white mb-2">
@@ -249,6 +244,29 @@ const ModelCard: React.FC<ModelCardProps> = ({
                                 <div className="relative my-4 flex items-center justify-center">
                                   <div className="flex-grow border-t border-red-950 border-dotted"></div>
                                   <img
+                                      src="/assets/transfer_icon.svg"
+                                      alt="Icon"
+                                      className="mx-2"
+                                      style={{
+                                        width: '32px',
+                                        height: '32px',
+                                        backgroundColor: 'white',
+                                      }}
+                                  />
+
+                                  <span
+                                      className="px-2 bg-white text-xs font-light text-gray-500"
+                                      style={{
+                                        marginLeft: '-10px',
+                                        lineHeight: '12px',
+                                      }}
+                                  >
+                      {segment.Overstaptijd + " min overstaptijd"}
+                                    
+                    </span>
+                                  <div className="flex-grow border-t border-red-950 border-dotted"></div>
+
+                                  <img
                                       src="/assets/man_walking.svg"
                                       alt="Icon"
                                       className="mx-2"
@@ -258,6 +276,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
                                         backgroundColor: 'white',
                                       }}
                                   />
+
                                   <span
                                       className="px-2 bg-white text-xs font-light text-gray-500"
                                       style={{
@@ -265,7 +284,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
                                         lineHeight: '12px',
                                       }}
                                   >
-                      {segment.Overstaptijd + " min overstaptijd"}
+                      {segment.Wandeltijd + " min wandeltijd"}
                     </span>
                                   <div className="flex-grow border-t border-red-950 border-dotted"></div>
                                 </div>
