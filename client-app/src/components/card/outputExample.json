@@ -1,0 +1,171 @@
+// Example output Schiedam Centrum - Rotterdam Centraal
+// File : 6basis.txtpb
+{
+  "ModelId":"92ee07bc-10fa-47fa-8722-9cf6dabe8d31",
+  "ModelNaam":"6basis",
+  "Data":[
+    {
+      "ReisDuur":47,
+      "UurPatroon":"10/40",
+      "Frequentie":2,
+      "AantalOverstappen":2,
+      "Reisadviezen":[
+        {
+          "Segmenten":[
+            {
+              "SegmentDuur":5,
+              "TreinType":"SP",
+              "TreinId":"251|2",
+              "SerieNaam":"5200AC",
+              "Bestemming":"Dordrecht",
+              "BestemmingAfkorting":"Ddr",
+              "Stappen":[
+                {
+                  "StapType":1,
+                  "Station":"Schiedam Centrum",
+                  "Tijd":10,
+                  "Spoor":"2"
+                },
+                {
+                  "StapType":0,
+                  "Station":"Rotterdam Centraal",
+                  "Tijd":15,
+                  "Spoor":"7"
+                }
+              ],
+              "StappenId":"StappenId_0"
+            },
+            {
+              "SegmentDuur":37,
+              "TreinType":"IC",
+              "TreinId":"199|2",
+              "SerieNaam":"2800AC",
+              "Bestemming":"Utrecht Centraal",
+              "BestemmingAfkorting":"Ut",
+              "Stappen":[
+                {
+                  "StapType":1,
+                  "Station":"Rotterdam Centraal",
+                  "Tijd":20,
+                  "Spoor":"14"
+                },
+                {
+                  "StapType":0,
+                  "Station":"Rotterdam Alexander",
+                  "Tijd":28,
+                  "Spoor":"1"
+                },
+                {
+                  "StapType":1,
+                  "Station":"Rotterdam Alexander",
+                  "Tijd":28,
+                  "Spoor":"1"
+                },
+                {
+                  "StapType":0,
+                  "Station":"Gouda",
+                  "Tijd":38,
+                  "Spoor":"3"
+                },
+                {
+                  "StapType":1,
+                  "Station":"Gouda",
+                  "Tijd":39,
+                  "Spoor":"3"
+                },
+                {
+                  "StapType":0,
+                  "Station":"Utrecht Centraal",
+                  "Tijd":57,
+                  "Spoor":"9"
+                }
+              ],
+              "StappenId":"StappenId_1",
+              "Overstaptijd":5,
+              "Wandeltijd":5
+            }
+          ],
+          "SegmentId":"SegmentId_0"
+        },
+        {
+          "Segmenten":[
+            {
+              "SegmentDuur":5,
+              "TreinType":"SP",
+              "TreinId":"251|1",
+              "SerieNaam":"5200AC",
+              "Bestemming":"Dordrecht",
+              "BestemmingAfkorting":"Ddr",
+              "Stappen":[
+                {
+                  "StapType":1,
+                  "Station":"Schiedam Centrum",
+                  "Tijd":40,
+                  "Spoor":"2"
+                },
+                {
+                  "StapType":0,
+                  "Station":"Rotterdam Centraal",
+                  "Tijd":45,
+                  "Spoor":"7"
+                }
+              ],
+              "StappenId":"StappenId_2"
+            },
+            {
+              "SegmentDuur":37,
+              "TreinType":"IC",
+              "TreinId":"199|1",
+              "SerieNaam":"2800AC",
+              "Bestemming":"Utrecht Centraal",
+              "BestemmingAfkorting":"Ut",
+              "Stappen":[
+                {
+                  "StapType":1,
+                  "Station":"Rotterdam Centraal",
+                  "Tijd":50,
+                  "Spoor":"14"
+                },
+                {
+                  "StapType":0,
+                  "Station":"Rotterdam Alexander",
+                  "Tijd":58,
+                  "Spoor":"1"
+                },
+                {
+                  "StapType":1,
+                  "Station":"Rotterdam Alexander",
+                  "Tijd":58,
+                  "Spoor":"1"
+                },
+                {
+                  "StapType":0,
+                  "Station":"Gouda",
+                  "Tijd":8,
+                  "Spoor":"3"
+                },
+                {
+                  "StapType":1,
+                  "Station":"Gouda",
+                  "Tijd":9,
+                  "Spoor":"3"
+                },
+                {
+                  "StapType":0,
+                  "Station":"Utrecht Centraal",
+                  "Tijd":27,
+                  "Spoor":"9"
+                }
+              ],
+              "StappenId":"StappenId_3",
+              "Overstaptijd":5,
+              "Wandeltijd":5
+            }
+          ],
+          "SegmentId":"SegmentId_1"
+        }
+      ],
+      "ReisadviesId":"a19e7ce5-ddb3-4064-8ef5-7027c336dd30"
+    }
+  ]
+}
